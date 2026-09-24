@@ -7,6 +7,3 @@ https://docs.google.com/document/d/1oEPkM7nhTVBrXZoFuMKZvvzTzmru_mypJKF636SYJiE/
 
 Canva:
 https://canva.link/1q0ip1cmtbxqaz7
-
-
-Izveidoju github code space
