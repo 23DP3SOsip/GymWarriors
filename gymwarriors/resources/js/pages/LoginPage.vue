@@ -103,7 +103,7 @@ const login = async () => {
             return;
         }
 
-        router.push('/dashboard');
+        router.push('/profile');
 
     } catch (err) {
         error.value = 'Something went wrong. Please try again.';

@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -15,7 +16,12 @@ class AuthController extends Controller
             'first_name' => 'required|string|max:100',
             'last_name' => 'required|string|max:100',
             'email' => 'required|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8',
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed',
+            ],
             'phone' => 'nullable|string|max:15',
         ]);
 
@@ -29,7 +35,17 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return redirect('/')->with('success', 'Reģistrācija veiksmīga!');
+        $request->session()->regenerate();
+
+        return response()->json([
+            'message' => 'Reģistrācija veiksmīga!',
+            'user' => [
+                'id' => $user->id,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'email' => $user->email,
+            ],
+        ], 201);
     }
 
     public function login(Request $request)
@@ -39,15 +55,25 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-
-            return redirect('/');
+        if (!Auth::attempt($credentials)) {
+            throw ValidationException::withMessages([
+                'email' => ['Nepareizs e-pasts vai parole.'],
+            ]);
         }
 
-        return back()->withErrors([
-            'email' => 'Nepareizs e-pasts vai parole.',
-        ])->onlyInput('email');
+        $request->session()->regenerate();
+
+        $user = Auth::user();
+
+        return response()->json([
+            'message' => 'Ielogošanās veiksmīga!',
+            'user' => [
+                'id' => $user->id,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'email' => $user->email,
+            ],
+        ]);
     }
 
     public function logout(Request $request)
@@ -57,6 +83,8 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return response()->json([
+            'message' => 'Izlogošanās veiksmīga!',
+        ]);
     }
 }

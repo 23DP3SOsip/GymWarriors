@@ -14,8 +14,8 @@ class Plan extends Model
         'max_locations',
     ];
 
-    public function planPurchases()
-    {
-        return $this->hasMany(PlanPurchase::class);
-    }
+    protected $casts = [
+        'price' => 'decimal:2',
+        'max_locations' => 'integer',
+    ];
 }
