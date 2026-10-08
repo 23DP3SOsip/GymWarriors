@@ -3,9 +3,9 @@
 
         <!-- NAVBAR -->
         <header class="navbar">
-            <div class="navbar-logo">
-                GYM<span>WARRIORS</span>
-            </div>
+            <router-link to="/" class="navbar-logo">
+            GYM<span>WARRIORS</span>
+            </router-link>
 
             <nav class="navbar-links">
                 <a href="#features">FEATURES</a>
