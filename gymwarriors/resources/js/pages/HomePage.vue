@@ -14,9 +14,40 @@
             </nav>
 
             <div class="navbar-actions">
-                <a href="/login" class="login-btn">LOG IN</a>
-                <a href="/register" class="start-btn">START TRAINING</a>
-            </div>
+
+    <router-link
+        v-if="isLoggedIn"
+        to="/profile"
+        class="login-btn"
+    >
+        PROFILE
+    </router-link>
+
+    <router-link
+        v-else
+        to="/login"
+        class="login-btn"
+    >
+        LOG IN
+    </router-link>
+
+    <router-link
+        v-if="isLoggedIn"
+        to="/plans"
+        class="start-btn"
+    >
+        MEMBERSHIP
+    </router-link>
+
+    <router-link
+        v-else
+        to="/register"
+        class="start-btn"
+    >
+        START TRAINING
+    </router-link>
+
+</div>
         </header>
 
 
@@ -40,9 +71,9 @@
                 </p>
 
                 <div class="hero-buttons">
-                    <a href="/register" class="primary-btn">
+                    <router-link to="/register" class="primary-btn">
                         START TRAINING
-                    </a>
+                    </router-link>
 
                     <a href="#features" class="secondary-btn">
                         EXPLORE FEATURES
@@ -248,9 +279,9 @@
                         Up to 2 locations
                     </div>
 
-                    <a href="/register" class="plan-button">
+                    <router-link to="/register" class="plan-button">
                         CHOOSE PLAN
-                    </a>
+                    </router-link>
 
                 </article>
 
@@ -292,9 +323,9 @@
                         Unlimited locations
                     </div>
 
-                    <a href="/register" class="plan-button">
+                    <router-link to="/register" class="plan-button">
                         CHOOSE PLAN
-                    </a>
+                    </router-link>
 
                 </article>
 
@@ -377,7 +408,7 @@
                 <a href="#features">FEATURES</a>
                 <a href="#pricing">PRICING</a>
                 <a href="#faq">FAQ</a>
-                <a href="/login">LOGIN</a>
+                <router-link to="/login">LOGIN</router-link>
             </div>
 
             <div class="footer-bottom">
@@ -388,3 +419,26 @@
 
     </div>
 </template>
+<script setup>
+import { onMounted, ref } from 'vue';
+
+const isLoggedIn = ref(false);
+
+const checkAuthentication = async () => {
+    try {
+        const response = await fetch('/api/user', {
+            headers: {
+                Accept: 'application/json',
+            },
+        });
+
+        isLoggedIn.value = response.ok;
+    } catch (error) {
+        isLoggedIn.value = false;
+    }
+};
+
+onMounted(() => {
+    checkAuthentication();
+});
+</script>
