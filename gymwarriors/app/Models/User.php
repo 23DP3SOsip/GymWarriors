@@ -36,4 +36,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(BodyMetric::class);
     }
+
+    public function calorieProfile()
+    {
+        return $this->hasOne(CalorieProfile::class);
+    }
 }

@@ -8,6 +8,7 @@ use App\Models\PlanPurchase;
 use App\Models\Location;
 use App\Models\PurchaseLocation;
 use Carbon\Carbon;
+use App\Http\Controllers\CalorieProfileController;
 
 
 /*
@@ -385,6 +386,11 @@ Route::middleware('auth')->get('/api/profile', function (Request $request) {
 });
 
 
+
+Route::middleware('auth')->group(function () {
+    Route::get('/api/calorie-profile', [CalorieProfileController::class, 'show']);
+    Route::post('/api/calorie-profile', [CalorieProfileController::class, 'store']);
+});
 /*
 |--------------------------------------------------------------------------
 | VUE FALLBACK

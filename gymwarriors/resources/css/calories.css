@@ -1,0 +1,197 @@
+.logout-button {
+    display: inline-block;
+}
+
+.calorie-header {
+    padding-bottom: 60px;
+    border-bottom: 1px solid #222;
+}
+
+.calorie-header h1 {
+    margin-top: 8px;
+    font-size: clamp(40px, 6vw, 72px);
+    line-height: 0.95;
+    font-weight: 900;
+}
+
+.calorie-intro {
+    margin-top: 15px;
+    max-width: 560px;
+    color: #777;
+    line-height: 1.5;
+}
+
+.calorie-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.calorie-form label,
+.calorie-field-label {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    color: #666;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
+.calorie-field-label {
+    margin-bottom: 10px;
+}
+
+.calorie-form input,
+.calorie-form select {
+    width: 100%;
+    padding: 14px;
+    background: #111;
+    border: 1px solid #292929;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 16px;
+}
+
+.calorie-form input:focus,
+.calorie-form select:focus {
+    outline: none;
+    border-color: #e50914;
+}
+
+.calorie-wide {
+    grid-column: 1 / -1;
+}
+
+.goal-options {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.goal-option {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+    background: #111;
+    border: 1px solid #292929;
+    color: #ffffff;
+    text-align: left;
+    cursor: pointer;
+}
+
+.goal-option strong {
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+.goal-option span {
+    color: #777;
+    font-size: 12px;
+}
+
+.goal-option:hover {
+    border-color: #555;
+}
+
+.goal-option.active {
+    border-color: #e50914;
+    box-shadow: 4px 4px 0 #e50914;
+}
+
+.calorie-submit {
+    grid-column: 1 / -1;
+    justify-self: start;
+    border: none;
+    cursor: pointer;
+}
+
+.calorie-submit:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.calorie-message {
+    grid-column: 1 / -1;
+    font-size: 14px;
+}
+
+.calorie-message.error {
+    color: #ff5a5f;
+}
+
+.calorie-message.success {
+    color: #4ade80;
+}
+
+.calorie-results {
+    margin-bottom: 20px;
+}
+
+.macro-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    background: #222;
+    border: 1px solid #222;
+}
+
+.macro-grid > div {
+    padding: 25px 20px;
+    text-align: center;
+    background: #111;
+}
+
+.macro-grid strong {
+    display: block;
+    font-size: 26px;
+    font-weight: 900;
+}
+
+.macro-grid span {
+    display: block;
+    margin-top: 8px;
+    color: #777;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
+.calorie-note {
+    margin-top: 20px;
+    color: #777;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.friends-empty {
+    padding: 35px;
+    background: #111;
+    border: 1px solid #292929;
+}
+
+.friends-empty h2 {
+    font-size: 24px;
+}
+
+.friends-empty p {
+    margin-top: 10px;
+    color: #777;
+}
+
+@media (max-width: 700px) {
+    .calorie-form,
+    .goal-options {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-grid.calorie-results {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.profile-nav a.nav-current {
+    color: #ffffff;
+}

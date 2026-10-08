@@ -9,7 +9,11 @@
                 <router-link to="/profile">PROFILE</router-link>
                 <a href="#stats">STATS</a>
                 <a href="#membership">MEMBERSHIP</a>
+                <a href="#friends">FRIENDS</a>
+                <router-link to="/calories">CALORIE TRACKING</router-link>
             </nav>
+
+            
 
             <button class="logout-button" @click="logout">
                 LOG OUT
@@ -209,6 +213,22 @@
                     >
                         VIEW PLANS
                     </router-link>
+                </div>
+            </section>
+
+            <section class="profile-section" id="friends">
+                <div class="section-title">
+                    <span>05</span>
+                    FRIENDS
+                </div>
+
+                <div class="friends-empty">
+                    <h2>NO FRIENDS YET</h2>
+
+                    <p>
+                        Train together, stay motivated. Your Gym Warriors
+                        friends will appear here.
+                    </p>
                 </div>
             </section>
 

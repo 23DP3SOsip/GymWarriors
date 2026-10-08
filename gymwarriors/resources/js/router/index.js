@@ -5,9 +5,17 @@ import LoginPage from '../pages/LoginPage.vue';
 import RegisterPage from '../pages/RegisterPage.vue';
 import ProfilePage from '../pages/ProfilePage.vue';
 import PlansPage from '../pages/PlansPage.vue';
+import CaloriesPage from '../pages/CaloriesPage.vue';
 
 const router = createRouter({
     history: createWebHistory(),
+    scrollBehavior(to) {
+        if (to.hash) {
+            return { el: to.hash, behavior: 'smooth' };
+        }
+
+        return { top: 0 };
+    },
 
     routes: [
         {
@@ -34,6 +42,12 @@ const router = createRouter({
             path: '/plans',
             name: 'plans',
             component: PlansPage,
+        },
+
+        {
+            path: '/calories',
+            name: 'calories',
+            component: CaloriesPage,
         },
     ],
 });

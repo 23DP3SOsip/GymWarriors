@@ -2047,3 +2047,968 @@ button {
     }
 
 }
+
+/* =========================================================
+   GLOBAL RESPONSIVE FIXES
+   ========================================================= */
+
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+    max-width: 100%;
+}
+
+
+/* =========================================================
+   TABLET / SMALL LAPTOP
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+    /* HOME */
+
+    .navbar {
+        padding: 0 35px;
+    }
+
+    .hero {
+        padding: 75px 5%;
+        gap: 45px;
+    }
+
+    .hero h1 {
+        font-size: clamp(55px, 8vw, 100px);
+    }
+
+    .warrior-card {
+        padding: 30px;
+    }
+
+    .features-section {
+        padding-left: 5%;
+        padding-right: 5%;
+    }
+
+    .system-section {
+        padding-left: 5%;
+        padding-right: 5%;
+    }
+
+    .pricing-section {
+        padding-left: 5%;
+        padding-right: 5%;
+    }
+
+    .faq-section {
+        padding-left: 5%;
+        padding-right: 5%;
+    }
+
+    .footer {
+        padding-left: 5%;
+        padding-right: 5%;
+    }
+
+
+    /* PROFILE */
+
+    .profile-container {
+        width: min(1000px, calc(100% - 50px));
+    }
+
+
+    /* PLANS */
+
+    .plans-navbar {
+        padding: 0 35px;
+    }
+
+    .plans-container {
+        padding-left: 30px;
+        padding-right: 30px;
+    }
+
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    /* HOME NAVBAR */
+
+    .navbar {
+        height: auto;
+        min-height: 75px;
+        padding: 15px 25px;
+        gap: 20px;
+    }
+
+    .navbar-logo {
+        font-size: 23px;
+        white-space: nowrap;
+    }
+
+    .navbar-actions {
+        gap: 12px;
+    }
+
+    .start-btn {
+        padding: 11px 16px;
+        font-size: 11px;
+    }
+
+
+    /* HOME HERO */
+
+    .hero {
+        min-height: auto;
+        grid-template-columns: 1fr;
+        padding: 70px 6%;
+        gap: 60px;
+    }
+
+    .hero-content {
+        width: 100%;
+    }
+
+    .hero h1 {
+        max-width: 850px;
+    }
+
+    .hero-description {
+        max-width: 650px;
+    }
+
+    .warrior-card {
+        width: 100%;
+        max-width: 650px;
+        margin: 0 auto;
+    }
+
+
+    /* FEATURES */
+
+    .features-section {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .feature-card {
+        min-height: 300px;
+    }
+
+
+    /* PRICING */
+
+    .pricing-grid {
+        grid-template-columns: 1fr;
+        max-width: 700px;
+    }
+
+
+    /* PROFILE */
+
+    .profile-header {
+        gap: 25px;
+    }
+
+    .profile-info h1 {
+        font-size: clamp(40px, 7vw, 70px);
+    }
+
+
+    /* PLANS */
+
+    .plans-grid {
+        grid-template-columns: 1fr;
+        max-width: 700px;
+    }
+
+    .plans-container {
+        max-width: 800px;
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    /* -----------------------------------------------------
+       HOME NAVBAR
+       ----------------------------------------------------- */
+
+    .navbar {
+        min-height: 70px;
+        padding: 12px 16px;
+        gap: 10px;
+    }
+
+    .navbar-logo {
+        font-size: 19px;
+        letter-spacing: 0.5px;
+    }
+
+    .navbar-actions {
+        gap: 8px;
+    }
+
+    .navbar-actions .login-btn {
+        display: none;
+    }
+
+    .start-btn {
+        padding: 10px 12px;
+        font-size: 9px;
+        letter-spacing: 0.7px;
+        white-space: nowrap;
+    }
+
+
+    /* -----------------------------------------------------
+       HOME HERO
+       ----------------------------------------------------- */
+
+    .hero {
+        padding: 55px 18px;
+        gap: 45px;
+    }
+
+    .hero-small {
+        font-size: 11px;
+        letter-spacing: 2px;
+        line-height: 1.4;
+    }
+
+    .hero h1 {
+        margin-top: 15px;
+        font-size: clamp(48px, 15vw, 70px);
+        line-height: 0.92;
+        letter-spacing: -2px;
+        word-break: normal;
+    }
+
+    .hero-description {
+        margin-top: 25px;
+        font-size: 15px;
+        line-height: 1.6;
+    }
+
+    .hero-buttons {
+        width: 100%;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 30px;
+    }
+
+    .primary-btn,
+    .secondary-btn {
+        width: 100%;
+        text-align: center;
+        padding: 15px 18px;
+        font-size: 12px;
+    }
+
+
+    /* -----------------------------------------------------
+       WARRIOR CARD
+       ----------------------------------------------------- */
+
+    .warrior-card {
+        width: 100%;
+        padding: 22px;
+        box-shadow: 6px 6px 0 #e50914;
+    }
+
+    .warrior-card-header {
+        font-size: 10px;
+        gap: 10px;
+    }
+
+    .warrior-avatar {
+        margin: 30px 0 20px;
+    }
+
+    .avatar-placeholder {
+        width: 100px;
+        height: 100px;
+        font-size: 30px;
+    }
+
+    .warrior-card h2 {
+        font-size: 23px;
+    }
+
+    .rank-info {
+        margin-top: 22px;
+        font-size: 10px;
+    }
+
+    .progress-text {
+        font-size: 9px;
+        line-height: 1.4;
+    }
+
+
+    /* -----------------------------------------------------
+       STATS
+       ----------------------------------------------------- */
+
+    .stats-section {
+        grid-template-columns: 1fr;
+    }
+
+    .stat {
+        padding: 35px 15px;
+        border-right: none;
+        border-bottom: 1px solid #222;
+    }
+
+    .stat:last-child {
+        border-bottom: none;
+    }
+
+    .stat strong {
+        font-size: 45px;
+    }
+
+    .stat span {
+        font-size: 10px;
+        letter-spacing: 1.5px;
+    }
+
+
+    /* -----------------------------------------------------
+       SYSTEM
+       ----------------------------------------------------- */
+
+    .system-section {
+        padding: 80px 18px;
+    }
+
+    .section-label {
+        font-size: 11px;
+        letter-spacing: 2px;
+    }
+
+    .system-section h2,
+    .pricing-header h2,
+    .faq-section h2 {
+        font-size: clamp(38px, 11vw, 55px);
+        line-height: 0.95;
+        letter-spacing: -1px;
+    }
+
+    .system-section p {
+        font-size: 15px;
+        line-height: 1.6;
+    }
+
+
+    /* -----------------------------------------------------
+       FEATURES
+       ----------------------------------------------------- */
+
+    .features-section {
+        grid-template-columns: 1fr;
+        padding: 0 18px 80px;
+        gap: 15px;
+    }
+
+    .feature-card {
+        min-height: 270px;
+        padding: 25px;
+    }
+
+    .feature-number {
+        font-size: 28px;
+    }
+
+    .feature-card h3 {
+        margin-top: 45px;
+        font-size: 22px;
+    }
+
+    .feature-card p {
+        font-size: 14px;
+    }
+
+
+    /* -----------------------------------------------------
+       PRICING
+       ----------------------------------------------------- */
+
+    .pricing-section {
+        padding: 80px 18px;
+    }
+
+    .pricing-grid {
+        grid-template-columns: 1fr;
+        margin-top: 40px;
+        gap: 15px;
+    }
+
+    .pricing-card {
+        padding: 25px;
+    }
+
+    .plan-price {
+        font-size: 42px;
+    }
+
+    .plan-feature {
+        font-size: 14px;
+    }
+
+    .plan-button {
+        padding: 15px;
+    }
+
+
+    /* -----------------------------------------------------
+       FAQ
+       ----------------------------------------------------- */
+
+    .faq-section {
+        padding: 80px 18px;
+    }
+
+    .faq-list {
+        margin-top: 40px;
+    }
+
+    .faq-question {
+        padding: 20px 0;
+        gap: 15px;
+        font-size: 16px;
+    }
+
+    .faq-icon {
+        flex-shrink: 0;
+        font-size: 22px;
+    }
+
+
+    /* -----------------------------------------------------
+       FOOTER
+       ----------------------------------------------------- */
+
+    .footer {
+        padding: 55px 18px 25px;
+    }
+
+    .footer-logo {
+        font-size: 28px;
+    }
+
+    .footer p {
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .footer-links {
+        flex-wrap: wrap;
+        gap: 15px 25px;
+        margin-top: 25px;
+    }
+
+    .footer-links a {
+        font-size: 11px;
+    }
+
+    .footer-bottom {
+        margin-top: 35px;
+        line-height: 1.5;
+    }
+
+
+    /* -----------------------------------------------------
+       AUTH
+       ----------------------------------------------------- */
+
+    .auth-page {
+        min-height: 100vh;
+        padding: 20px 14px;
+    }
+
+    .auth-card {
+        width: 100%;
+        padding: 28px 20px;
+        box-shadow: 5px 5px 0 #e50914;
+    }
+
+    .auth-logo {
+        font-size: 22px;
+    }
+
+    .auth-label {
+        margin-top: 35px;
+        font-size: 11px;
+        letter-spacing: 2px;
+    }
+
+    .auth-card h1 {
+        font-size: clamp(42px, 13vw, 55px);
+    }
+
+    .auth-description {
+        font-size: 14px;
+    }
+
+    .form-group input {
+        padding: 14px;
+        font-size: 14px;
+    }
+
+    .auth-button {
+        padding: 15px;
+        font-size: 13px;
+    }
+
+
+    /* -----------------------------------------------------
+       PROFILE NAVBAR
+       ----------------------------------------------------- */
+
+    .profile-navbar {
+        height: auto;
+        min-height: 70px;
+        padding: 12px 16px;
+    }
+
+    .profile-logo {
+        font-size: 20px;
+    }
+
+    .logout-button {
+        padding: 10px 12px;
+        font-size: 10px;
+    }
+
+
+    /* -----------------------------------------------------
+       PROFILE
+       ----------------------------------------------------- */
+
+    .profile-container {
+        width: calc(100% - 32px);
+        padding: 45px 0 70px;
+    }
+
+    .profile-header {
+        padding-bottom: 40px;
+        gap: 25px;
+    }
+
+    .profile-avatar {
+        width: 95px;
+        height: 95px;
+        font-size: 28px;
+        box-shadow: 5px 5px 0 #e50914;
+    }
+
+    .profile-label {
+        font-size: 10px;
+        letter-spacing: 2px;
+    }
+
+    .profile-info h1 {
+        font-size: clamp(38px, 12vw, 55px);
+        line-height: 0.95;
+        word-break: break-word;
+    }
+
+    .profile-email {
+        font-size: 13px;
+        word-break: break-word;
+    }
+
+    .profile-section {
+        padding: 50px 0;
+    }
+
+    .section-title {
+        font-size: 16px;
+        margin-bottom: 25px;
+    }
+
+
+    /* PROFILE FIELDS */
+
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-field {
+        padding: 20px;
+    }
+
+    .profile-field p {
+        font-size: 15px;
+        word-break: break-word;
+    }
+
+
+    /* PROFILE STATS */
+
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .profile-stat {
+        padding: 25px 10px;
+    }
+
+    .profile-stat strong {
+        font-size: 32px;
+    }
+
+    .profile-stat span {
+        font-size: 9px;
+        letter-spacing: 1px;
+        line-height: 1.4;
+    }
+
+
+    /* MEMBERSHIP */
+
+    .membership-card {
+        padding: 22px;
+        gap: 25px;
+    }
+
+    .membership-card h2 {
+        font-size: 25px;
+    }
+
+    .membership-card p:last-child {
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .membership-button {
+        width: 100%;
+        text-align: center;
+        padding: 14px 18px;
+    }
+
+    .account-actions {
+        width: 100%;
+    }
+
+    .account-button {
+        width: 100%;
+    }
+
+
+    /* MEMBERSHIP LOCATIONS */
+
+    .membership-location {
+        padding: 13px;
+        gap: 10px;
+    }
+
+    .membership-location-number {
+        width: 34px;
+        height: 34px;
+        font-size: 10px;
+    }
+
+    .membership-location-info strong {
+        font-size: 12px;
+    }
+
+    .membership-location-info span {
+        font-size: 10px;
+        line-height: 1.4;
+    }
+
+    .membership-all-locations {
+        padding: 15px;
+    }
+
+
+    /* -----------------------------------------------------
+       PLANS NAVBAR
+       ----------------------------------------------------- */
+
+    .plans-navbar {
+        height: auto;
+        min-height: 70px;
+        padding: 12px 16px;
+    }
+
+    .plans-logo {
+        font-size: 18px;
+        letter-spacing: 1px;
+    }
+
+    .plans-nav-actions {
+        gap: 8px;
+    }
+
+    .plans-logout-button {
+        padding: 9px 11px;
+        font-size: 9px;
+    }
+
+
+    /* -----------------------------------------------------
+       PLANS
+       ----------------------------------------------------- */
+
+    .plans-container {
+        padding: 50px 16px 35px;
+    }
+
+    .plans-hero {
+        margin-bottom: 40px;
+    }
+
+    .plans-label {
+        font-size: 10px;
+        letter-spacing: 2px;
+    }
+
+    .plans-hero h1 {
+        font-size: clamp(42px, 13vw, 60px);
+        letter-spacing: -2px;
+    }
+
+    .plans-description {
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .plans-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .plan-card {
+        padding: 25px 20px;
+    }
+
+    .plan-number {
+        margin-bottom: 25px;
+    }
+
+    .plan-card h2 {
+        font-size: 34px;
+    }
+
+    .plan-price strong {
+        font-size: 32px;
+    }
+
+    .plan-features {
+        margin-bottom: 25px;
+    }
+
+    .plan-features li {
+        font-size: 11px;
+    }
+
+    .plan-button {
+        padding: 14px;
+    }
+
+
+    /* -----------------------------------------------------
+       LOCATION MODAL
+       ----------------------------------------------------- */
+
+    .location-modal-overlay {
+        padding: 8px;
+    }
+
+    .location-modal {
+        width: 100%;
+        max-height: 96vh;
+        padding: 25px 16px 20px;
+    }
+
+    .location-modal-close {
+        top: 12px;
+        right: 12px;
+        width: 36px;
+        height: 36px;
+        font-size: 20px;
+    }
+
+    .location-modal-header {
+        margin-bottom: 25px;
+        padding-right: 40px;
+    }
+
+    .location-modal-label {
+        font-size: 10px;
+        letter-spacing: 2.5px;
+    }
+
+    .location-modal-header h2 {
+        font-size: clamp(32px, 10vw, 40px);
+        letter-spacing: -1px;
+    }
+
+    .location-modal-description {
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .location-selected {
+        margin-top: 18px;
+        font-size: 11px;
+    }
+
+    .location-selected strong {
+        font-size: 21px;
+    }
+
+    .locations-list {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .location-image {
+        height: 135px;
+    }
+
+    .location-content {
+        padding: 15px;
+        gap: 10px;
+    }
+
+    .location-pin {
+        width: 32px;
+        height: 32px;
+        flex-shrink: 0;
+    }
+
+    .location-info strong {
+        font-size: 13px;
+    }
+
+    .location-info span {
+        font-size: 10px;
+        line-height: 1.4;
+    }
+
+    .location-confirm-button {
+        min-height: 52px;
+        margin-top: 18px;
+        font-size: 11px;
+    }
+
+}
+
+
+/* =========================================================
+   VERY SMALL PHONES
+   360px AND BELOW
+   ========================================================= */
+
+@media (max-width: 360px) {
+
+    .navbar-logo {
+        font-size: 17px;
+    }
+
+    .start-btn {
+        padding: 9px 10px;
+        font-size: 8px;
+    }
+
+    .hero {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .hero h1 {
+        font-size: 46px;
+    }
+
+    .hero-description {
+        font-size: 14px;
+    }
+
+    .warrior-card {
+        padding: 18px;
+    }
+
+    .avatar-placeholder {
+        width: 85px;
+        height: 85px;
+        font-size: 26px;
+    }
+
+    .warrior-card h2 {
+        font-size: 20px;
+    }
+
+    .system-section,
+    .features-section,
+    .pricing-section,
+    .faq-section {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .feature-card {
+        padding: 20px;
+    }
+
+    .pricing-card {
+        padding: 20px;
+    }
+
+    .profile-container {
+        width: calc(100% - 24px);
+    }
+
+    .profile-info h1 {
+        font-size: 36px;
+    }
+
+    .profile-stat {
+        padding: 20px 6px;
+    }
+
+    .profile-stat strong {
+        font-size: 28px;
+    }
+
+    .plans-container {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .plan-card {
+        padding: 22px 17px;
+    }
+
+    .location-modal {
+        padding-left: 13px;
+        padding-right: 13px;
+    }
+
+}
