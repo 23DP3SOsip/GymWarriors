@@ -199,6 +199,17 @@ Route::middleware('auth')->post('/api/plans/purchase', function (Request $reques
 
     $endDate = Carbon::today()->addDays(29);
 
+/*
+|--------------------------------------------------------------------------
+| DEAKTIVIZĒ IEPRIEKŠĒJO AKTĪVO PLĀNU
+|--------------------------------------------------------------------------
+*/
+
+PlanPurchase::where('user_id', $request->user()->id)
+    ->where('status', 'active')
+    ->update([
+        'status' => 'deactivate',
+    ]);
 
     /*
     |--------------------------------------------------------------------------
