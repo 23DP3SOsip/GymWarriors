@@ -1,5 +1,6 @@
 import '../css/app.css';
 import '../css/calories.css'
+import '../css/qr-code.css'
 
 import { createApp } from 'vue';
 import App from './App.vue';

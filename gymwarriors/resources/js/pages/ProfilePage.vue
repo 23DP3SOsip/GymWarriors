@@ -260,6 +260,67 @@
                 </div>
             </section>
 
+            <section v-if="membership" class="profile-section" id="qr">
+                <div class="section-title">
+                    <span>04</span>
+                    ENTRY QR CODE
+                </div>
+
+                <div class="qr-panel">
+                    <div class="qr-tokens">
+                        <strong>{{ membership.remaining_tokens }}</strong>
+                        <span>TOKENS LEFT</span>
+                    </div>
+
+                    <div class="qr-content">
+                        <template v-if="qrImage">
+                            <img
+                                :src="qrImage"
+                                alt="Your entry QR code"
+                                class="qr-image"
+                            />
+
+                            <p class="qr-timer">
+                                VALID FOR {{ qrCountdown }}
+                            </p>
+
+                            <p class="qr-hint">
+                                Show this code at the gym entrance. You can
+                                generate a new one when this code expires.
+                            </p>
+                        </template>
+
+                        <template v-else>
+                            <p class="qr-hint">
+                                Generating a QR code uses 1 token. The code
+                                is valid for 24 hours.
+                            </p>
+
+                            <button
+                                type="button"
+                                class="membership-button qr-button"
+                                :disabled="qrLoading || membership.remaining_tokens < 1"
+                                @click="generateQr"
+                            >
+                                {{ qrLoading ? 'GENERATING...' : 'GET QR CODE' }}
+                            </button>
+
+                            <p
+                                v-if="membership.remaining_tokens < 1"
+                                class="qr-error"
+                            >
+                                You have no tokens left. Buy a new plan to
+                                continue.
+                            </p>
+                        </template>
+
+                        <p v-if="qrError" class="qr-error">
+                            {{ qrError }}
+                        </p>
+                    </div>
+                </div>
+            </section>
+
             <section class="profile-section" id="friends">
                 <div class="section-title">
                     <span>05</span>
@@ -278,7 +339,7 @@
 
             <section class="profile-section">
                 <div class="section-title">
-                    <span>04</span>
+                    <span>06</span>
                     ACCOUNT
                 </div>
 
@@ -296,7 +357,8 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
+import QRCode from 'qrcode';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -365,6 +427,115 @@ const loadProfile = async () => {
     }
 };
 
+const qrImage = ref('');
+const qrExpiresAt = ref(0);
+const qrLoading = ref(false);
+const qrError = ref('');
+const now = ref(Date.now());
+
+let timer = null;
+
+const qrSecondsLeft = computed(() => {
+    if (!qrImage.value) {
+        return 0;
+    }
+
+    return Math.max(Math.floor((qrExpiresAt.value - now.value) / 1000), 0);
+});
+
+const qrCountdown = computed(() => {
+    const total = qrSecondsLeft.value;
+
+    const hours = String(Math.floor(total / 3600)).padStart(2, '0');
+    const minutes = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
+    const seconds = String(total % 60).padStart(2, '0');
+
+    return `${hours}:${minutes}:${seconds}`;
+});
+
+// When the 24 hours run out the QR code disappears
+// and the "GET QR CODE" button shows up again.
+watch(qrSecondsLeft, (seconds) => {
+    if (seconds === 0 && qrImage.value) {
+        qrImage.value = '';
+        qrExpiresAt.value = 0;
+    }
+});
+
+const csrfToken = () => {
+    const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
+
+    return match ? decodeURIComponent(match[1]) : '';
+};
+
+const showQr = async (qrCode) => {
+    now.value = Date.now();
+    qrExpiresAt.value = Date.now() + qrCode.expires_in * 1000;
+
+    qrImage.value = await QRCode.toDataURL(qrCode.code, {
+        width: 480,
+        margin: 2,
+    });
+};
+
+const loadQr = async () => {
+    try {
+        const response = await fetch('/api/qr-code', {
+            headers: {
+                Accept: 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            return;
+        }
+
+        const data = await response.json();
+
+        if (data.qr_code) {
+            await showQr(data.qr_code);
+        }
+    } catch (error) {
+        console.error('QR LOAD ERROR:', error);
+    }
+};
+
+const generateQr = async () => {
+    qrLoading.value = true;
+    qrError.value = '';
+
+    try {
+        const response = await fetch('/api/qr-code', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'X-XSRF-TOKEN': csrfToken(),
+            },
+        });
+
+        if (response.status === 401) {
+            router.push('/login');
+            return;
+        }
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            qrError.value = data.message || 'Could not generate a QR code.';
+            return;
+        }
+
+        membership.value.remaining_tokens = data.remaining_tokens;
+
+        await showQr(data.qr_code);
+    } catch (error) {
+        qrError.value = 'Could not generate a QR code.';
+        console.error('QR GENERATE ERROR:', error);
+    } finally {
+        qrLoading.value = false;
+    }
+};
+
 const logout = async () => {
     try {
         await fetch('/logout', {
@@ -380,5 +551,14 @@ const logout = async () => {
 
 onMounted(() => {
     loadProfile();
+    loadQr();
+
+    timer = setInterval(() => {
+        now.value = Date.now();
+    }, 1000);
+});
+
+onUnmounted(() => {
+    clearInterval(timer);
 });
 </script>
