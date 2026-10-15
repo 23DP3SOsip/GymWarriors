@@ -10,6 +10,7 @@ use App\Models\PurchaseLocation;
 use Carbon\Carbon;
 use App\Http\Controllers\CalorieProfileController;
 use App\Http\Controllers\QrCodeController;
+use App\Http\Controllers\BodyMetricController;
 
 /*
 |--------------------------------------------------------------------------
@@ -388,14 +389,17 @@ Route::middleware('auth')->get('/api/profile', function (Request $request) {
 
 
 Route::middleware('auth')->group(function () {
-    Route::get('/api/calorie-profile', [CalorieProfileController::class, 'show']);
-    Route::post('/api/calorie-profile', [CalorieProfileController::class, 'store']);
-    
     Route::get('/api/qr-code', [QrCodeController::class, 'show']);
     Route::post('/api/qr-code', [QrCodeController::class, 'store']);
+
+    Route::get('/api/body-metrics', [BodyMetricController::class, 'index']);
+    Route::post('/api/body-metrics', [BodyMetricController::class, 'store']);
+
+    Route::get('/api/calorie-profile', [CalorieProfileController::class, 'show']);
+    Route::post('/api/calorie-profile', [CalorieProfileController::class, 'store']);
+
 });
 /*
-|--------------------------------------------------------------------------
 | VUE FALLBACK
 |--------------------------------------------------------------------------
 */
