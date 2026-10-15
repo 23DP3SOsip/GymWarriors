@@ -13,10 +13,52 @@
                 <router-link to="/calories" class="nav-current">CALORIE TRACKING</router-link>
             </nav>
 
+            <button
+                type="button"
+                class="page-mobile-burger"
+                @click="isMenuOpen = !isMenuOpen"
+                :aria-expanded="isMenuOpen"
+                aria-label="Open navigation menu"
+            >
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
             <button class="logout-button" @click="logout">
                 LOG OUT
             </button>
         </header>
+
+        <div v-if="isMenuOpen" class="page-mobile-navigation">
+            <router-link to="/" @click="isMenuOpen = false">
+                HOME
+            </router-link>
+
+            <router-link to="/profile" @click="isMenuOpen = false">
+                PROFILE
+            </router-link>
+
+            <router-link to="/profile#stats" @click="isMenuOpen = false">
+                STATS
+            </router-link>
+
+            <router-link to="/profile#membership" @click="isMenuOpen = false">
+                MEMBERSHIP
+            </router-link>
+
+            <router-link to="/profile#friends" @click="isMenuOpen = false">
+                FRIENDS
+            </router-link>
+
+            <router-link to="/calories" @click="isMenuOpen = false">
+                CALORIE TRACKING
+            </router-link>
+
+            <button type="button" @click="logout">
+                LOG OUT
+            </button>
+        </div>
 
         <main class="profile-container">
             <section class="calorie-header">
@@ -148,6 +190,8 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
+
+const isMenuOpen = ref(false);
 
 const activityLevels = [
     { value: 'sedentary', label: 'Sedentary — little or no exercise', factor: 1.2 },
