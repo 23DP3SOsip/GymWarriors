@@ -12,6 +12,18 @@
                 <a href="#friends">FRIENDS</a>
                 <router-link to="/calories">CALORIE TRACKING</router-link>
             </nav>
+                
+<button
+    type="button"
+    class="page-mobile-burger"
+    @click="isMenuOpen = !isMenuOpen"
+    :aria-expanded="isMenuOpen"
+    aria-label="Open navigation menu"
+>
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
 
             
 
@@ -19,6 +31,38 @@
                 LOG OUT
             </button>
         </header>
+
+        
+<div v-if="isMenuOpen" class="page-mobile-navigation">
+    <router-link to="/" @click="isMenuOpen = false">
+        HOME
+    </router-link>
+
+    <router-link to="/profile" @click="isMenuOpen = false">
+        PROFILE
+    </router-link>
+
+    <a href="#stats" @click="isMenuOpen = false">
+        STATS
+    </a>
+
+    <a href="#membership" @click="isMenuOpen = false">
+        MEMBERSHIP
+    </a>
+
+    <a href="#friends" @click="isMenuOpen = false">
+        FRIENDS
+    </a>
+
+    <router-link to="/calories" @click="isMenuOpen = false">
+        CALORIE TRACKING
+    </router-link>
+
+    <button type="button" @click="logout">
+        LOG OUT
+    </button>
+</div>
+
 
         <main class="profile-container">
             <section class="profile-header">
@@ -256,6 +300,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
+const isMenuOpen = ref(false);
 
 const user = reactive({
     id: null,

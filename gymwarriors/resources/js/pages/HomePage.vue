@@ -8,21 +8,36 @@
         <header class="navbar">
 
             <!-- LOGO -->
-            <router-link to="/" class="navbar-logo">
+            <router-link
+                to="/"
+                class="navbar-logo"
+            >
                 GYM<span>WARRIORS</span>
             </router-link>
 
-            <!-- DESKTOP LINKS -->
+
+            <!-- DESKTOP NAVIGATION -->
             <nav class="navbar-links">
-                <a href="#features">FEATURES</a>
-                <a href="#pricing">PRICING</a>
-                <a href="#faq">FAQ</a>
+
+                <a href="#features">
+                    FEATURES
+                </a>
+
+                <a href="#pricing">
+                    PRICING
+                </a>
+
+                <a href="#faq">
+                    FAQ
+                </a>
+
             </nav>
 
-            <!-- NAVIGATION ACTIONS -->
+
+            <!-- DESKTOP ACTIONS + MOBILE BURGER -->
             <div class="navbar-actions">
 
-                <!-- DESKTOP NAVIGATION -->
+                <!-- DESKTOP BUTTONS -->
                 <div class="desktop-nav-actions">
 
                     <!-- LOGGED IN -->
@@ -34,13 +49,15 @@
                         PROFILE
                     </router-link>
 
+                    <!-- NOT LOGGED IN -->
                     <router-link
-                        v-else
+                        v-if="!isLoggedIn"
                         to="/login"
                         class="login-btn"
                     >
                         LOG IN
                     </router-link>
+
 
                     <!-- LOGGED IN -->
                     <router-link
@@ -51,8 +68,9 @@
                         MEMBERSHIP
                     </router-link>
 
+                    <!-- NOT LOGGED IN -->
                     <router-link
-                        v-else
+                        v-if="!isLoggedIn"
                         to="/register"
                         class="start-btn"
                     >
@@ -61,12 +79,13 @@
 
                 </div>
 
+
                 <!-- MOBILE BURGER -->
                 <button
-                    class="mobile-menu-button"
+                    class="mobile-burger"
                     type="button"
-                    :aria-expanded="isMenuOpen"
                     aria-label="Open navigation menu"
+                    :aria-expanded="isMenuOpen"
                     @click="isMenuOpen = !isMenuOpen"
                 >
                     <span></span>
@@ -80,76 +99,79 @@
 
 
         <!-- =====================================================
-             MOBILE MENU
+             MOBILE NAVIGATION
         ====================================================== -->
 
         <div
             v-if="isMenuOpen"
-            class="mobile-menu"
+            class="mobile-navigation"
         >
 
-            <div class="mobile-menu-inner">
+            <div class="mobile-navigation-content">
 
-                <!-- MAIN SECTIONS -->
+                <!-- FEATURES -->
                 <a
                     href="#features"
-                    class="mobile-menu-link"
                     @click="isMenuOpen = false"
                 >
                     FEATURES
                 </a>
 
+
+                <!-- PRICING -->
                 <a
                     href="#pricing"
-                    class="mobile-menu-link"
                     @click="isMenuOpen = false"
                 >
                     PRICING
                 </a>
 
+
+                <!-- FAQ -->
                 <a
                     href="#faq"
-                    class="mobile-menu-link"
                     @click="isMenuOpen = false"
                 >
                     FAQ
                 </a>
 
 
-                <!-- LOGGED IN -->
+                <!-- LOGGED IN: PROFILE -->
                 <router-link
                     v-if="isLoggedIn"
                     to="/profile"
-                    class="mobile-menu-link"
                     @click="isMenuOpen = false"
                 >
                     PROFILE
                 </router-link>
 
+
+                <!-- LOGGED IN: MEMBERSHIP -->
                 <router-link
                     v-if="isLoggedIn"
                     to="/plans"
-                    class="mobile-menu-link mobile-menu-primary"
+                    class="mobile-navigation-primary"
                     @click="isMenuOpen = false"
                 >
                     MEMBERSHIP
                 </router-link>
 
 
-                <!-- NOT LOGGED IN -->
+                <!-- NOT LOGGED IN: LOGIN -->
                 <router-link
-                    v-else
+                    v-if="!isLoggedIn"
                     to="/login"
-                    class="mobile-menu-link"
                     @click="isMenuOpen = false"
                 >
                     LOG IN
                 </router-link>
 
+
+                <!-- NOT LOGGED IN: REGISTER -->
                 <router-link
-                    v-else
+                    v-if="!isLoggedIn"
                     to="/register"
-                    class="mobile-menu-link mobile-menu-primary"
+                    class="mobile-navigation-primary"
                     @click="isMenuOpen = false"
                 >
                     START TRAINING
@@ -172,15 +194,18 @@
                     WELCOME TO GYM WARRIORS
                 </p>
 
+
                 <h1>
                     BUILD YOUR
                     <span>WARRIOR</span>
                 </h1>
 
+
                 <p class="hero-description">
                     Track your workouts, monitor your progress,
                     climb the ranks and become stronger every day.
                 </p>
+
 
                 <div class="hero-buttons">
 
@@ -190,6 +215,7 @@
                     >
                         START TRAINING
                     </router-link>
+
 
                     <a
                         href="#features"
@@ -204,6 +230,7 @@
 
 
             <!-- WARRIOR CARD -->
+
             <div class="warrior-card">
 
                 <div class="warrior-card-header">
@@ -322,10 +349,12 @@
                 THE SYSTEM
             </div>
 
+
             <h2>
                 NO GUESSWORK.<br>
                 <span>JUST PROGRESS.</span>
             </h2>
+
 
             <p>
                 Gym Warriors gives you the tools to track your fitness
@@ -342,20 +371,24 @@
         <section class="features-section">
 
             <!-- FEATURE 01 -->
+
             <article class="feature-card">
 
                 <div class="feature-number">
                     01
                 </div>
 
+
                 <h3>
                     TRACK YOUR WORKOUTS
                 </h3>
+
 
                 <p>
                     Keep track of your training activity and build
                     a consistent workout history.
                 </p>
+
 
                 <div class="feature-line"></div>
 
@@ -363,20 +396,24 @@
 
 
             <!-- FEATURE 02 -->
+
             <article class="feature-card">
 
                 <div class="feature-number">
                     02
                 </div>
 
+
                 <h3>
                     CLIMB THE RANKS
                 </h3>
+
 
                 <p>
                     Improve your performance and progress through
                     the Gym Warriors ranking system.
                 </p>
+
 
                 <div class="feature-line"></div>
 
@@ -384,20 +421,24 @@
 
 
             <!-- FEATURE 03 -->
+
             <article class="feature-card">
 
                 <div class="feature-number">
                     03
                 </div>
 
+
                 <h3>
                     TRAIN TOGETHER
                 </h3>
+
 
                 <p>
                     Connect with other warriors, compare progress
                     and stay motivated.
                 </p>
+
 
                 <div class="feature-line"></div>
 
@@ -421,6 +462,7 @@
                     MEMBERSHIP
                 </div>
 
+
                 <h2>
                     CHOOSE YOUR
                     <span>LEVEL</span>
@@ -432,6 +474,7 @@
             <div class="pricing-grid">
 
                 <!-- PARASTAIS -->
+
                 <article class="pricing-card">
 
                     <div class="pricing-card-top">
@@ -458,15 +501,18 @@
                         Gym access
                     </div>
 
+
                     <div class="plan-feature">
                         <span>✓</span>
                         Workout tracking
                     </div>
 
+
                     <div class="plan-feature">
                         <span>✓</span>
                         Progress tracking
                     </div>
+
 
                     <div class="plan-feature">
                         <span>✓</span>
@@ -485,6 +531,7 @@
 
 
                 <!-- PRO -->
+
                 <article class="pricing-card">
 
                     <div class="pricing-card-top">
@@ -511,15 +558,18 @@
                         Gym access
                     </div>
 
+
                     <div class="plan-feature">
                         <span>✓</span>
                         Workout tracking
                     </div>
 
+
                     <div class="plan-feature">
                         <span>✓</span>
                         Progress tracking
                     </div>
+
 
                     <div class="plan-feature">
                         <span>✓</span>
@@ -554,6 +604,7 @@
                 FAQ
             </div>
 
+
             <h2>
                 FREQUENTLY ASKED
                 <span>QUESTIONS</span>
@@ -563,6 +614,7 @@
             <div class="faq-list">
 
                 <!-- FAQ 01 -->
+
                 <div class="faq-item">
 
                     <button
@@ -582,6 +634,7 @@
 
 
                 <!-- FAQ 02 -->
+
                 <div class="faq-item">
 
                     <button
@@ -601,6 +654,7 @@
 
 
                 <!-- FAQ 03 -->
+
                 <div class="faq-item">
 
                     <button
@@ -620,6 +674,7 @@
 
 
                 <!-- FAQ 04 -->
+
                 <div class="faq-item">
 
                     <button
@@ -652,6 +707,7 @@
                 GYM<span>WARRIORS</span>
             </div>
 
+
             <p>
                 BUILD YOUR WARRIOR. BUILD YOUR LEGACY.
             </p>
@@ -671,6 +727,9 @@
                     FAQ
                 </a>
 
+
+                <!-- NOT LOGGED IN -->
+
                 <router-link
                     v-if="!isLoggedIn"
                     to="/login"
@@ -678,8 +737,11 @@
                     LOGIN
                 </router-link>
 
+
+                <!-- LOGGED IN -->
+
                 <router-link
-                    v-else
+                    v-if="isLoggedIn"
                     to="/profile"
                 >
                     PROFILE
@@ -721,7 +783,7 @@ const isMenuOpen = ref(false);
 
 
 // =====================================================
-// CHECK AUTHENTICATION
+// CHECK USER AUTHENTICATION
 // =====================================================
 
 const checkAuthentication = async () => {
@@ -746,7 +808,7 @@ const checkAuthentication = async () => {
 
 
 // =====================================================
-// ON PAGE LOAD
+// PAGE LOAD
 // =====================================================
 
 onMounted(() => {

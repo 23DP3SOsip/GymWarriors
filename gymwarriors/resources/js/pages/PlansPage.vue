@@ -14,7 +14,40 @@
                     LOG OUT
                 </button>
             </div>
+            
+<button
+    type="button"
+    class="page-mobile-burger"
+    @click="isMenuOpen = !isMenuOpen"
+    :aria-expanded="isMenuOpen"
+    aria-label="Open navigation menu"
+>
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
+
         </header>
+
+        
+<div v-if="isMenuOpen" class="page-mobile-navigation">
+    <router-link to="/" @click="isMenuOpen = false">
+        HOME
+    </router-link>
+
+    <router-link to="/profile" @click="isMenuOpen = false">
+        PROFILE
+    </router-link>
+
+    <router-link to="/plans" @click="isMenuOpen = false">
+        MEMBERSHIP
+    </router-link>
+
+    <button type="button" @click="logout">
+        LOG OUT
+    </button>
+</div>
+
 
         <main class="plans-container">
             <section class="plans-hero">
@@ -234,6 +267,7 @@ import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
+const isMenuOpen = ref(false);
 
 const plans = ref([]);
 const locations = ref([]);
