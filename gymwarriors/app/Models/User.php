@@ -41,4 +41,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(CalorieProfile::class);
     }
+
+    public function workouts()
+    {
+        return $this->hasMany(UserWorkout::class);
+    }
 }

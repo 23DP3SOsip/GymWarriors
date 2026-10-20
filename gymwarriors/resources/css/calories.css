@@ -234,10 +234,65 @@
     line-height: 1.5;
 }
 
+.workout-library {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.workout-card {
+    padding: 22px;
+    background: #111;
+    border: 1px solid #292929;
+}
+
+.workout-card h2 {
+    font-size: 22px;
+}
+
+.workout-card p {
+    margin-top: 8px;
+    color: #777;
+    line-height: 1.5;
+}
+
+.workout-card ul {
+    display: grid;
+    gap: 8px;
+    margin: 18px 0;
+    padding-left: 18px;
+    color: #aaa;
+    line-height: 1.4;
+}
+
+.workout-card .membership-button {
+    border: 0;
+    cursor: pointer;
+}
+
+.workout-history {
+    display: grid;
+    gap: 1px;
+    background: #222;
+}
+
+.workout-history article {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px;
+    background: #111;
+}
+
+.workout-history span {
+    color: #777;
+}
+
 @media (max-width: 700px) {
     .calorie-form,
     .goal-options,
-    .recommendation-grid {
+    .recommendation-grid,
+    .workout-library {
         grid-template-columns: 1fr;
     }
 

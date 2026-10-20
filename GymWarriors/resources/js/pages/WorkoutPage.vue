@@ -8,7 +8,7 @@
                 <router-link to="/profile#membership">MEMBERSHIP</router-link>
                 <router-link to="/profile#friends">FRIENDS</router-link>
                 <router-link to="/calories">CALORIE TRACKING</router-link>
-                <router-link to="/workout" class="nav-current">NUTRITION</router-link>
+                <router-link to="/workout" class="nav-current">WORKOUTS AND NUTRITION</router-link>
             </nav>
             <button type="button" class="page-mobile-burger" @click="isMenuOpen = !isMenuOpen" :aria-expanded="isMenuOpen" aria-label="Open navigation menu">
                 <span></span><span></span><span></span>
@@ -23,13 +23,13 @@
             <router-link to="/profile#membership" @click="isMenuOpen = false">MEMBERSHIP</router-link>
             <router-link to="/profile#friends" @click="isMenuOpen = false">FRIENDS</router-link>
             <router-link to="/calories" @click="isMenuOpen = false">CALORIE TRACKING</router-link>
-            <router-link to="/workout" @click="isMenuOpen = false">NUTRITION</router-link>
+            <router-link to="/workout" @click="isMenuOpen = false">WORKOUTS AND NUTRITION</router-link>
             <button type="button" @click="logout">LOG OUT</button>
         </div>
 
         <main class="profile-container">
             <section class="calorie-header">
-                <p class="profile-label">NUTRITION</p>
+                <p class="profile-label">WORKOUTS AND NUTRITION</p>
                 <h1>TRAIN SMARTER</h1>
                 <p class="calorie-intro">Choose your workout type and get personalized nutrition, hydration, and training advice.</p>
             </section>
@@ -61,6 +61,49 @@
                 <ul class="recommendation-tips"><li v-for="tip in recommendation.tips" :key="tip">{{ tip }}</li></ul>
                 <p class="calorie-note">{{ recommendation.notice }}</p>
             </section>
+
+            <section class="profile-section">
+                <div class="section-title"><span>03</span> WORKOUT LIBRARY</div>
+                <div class="workout-library">
+                    <article v-for="template in templates" :key="template.id" class="workout-card">
+                        <h2>{{ template.name }}</h2>
+                        <p>{{ template.description }}</p>
+                        <ul>
+                            <li v-for="exercise in template.exercises" :key="exercise.id">
+                                {{ exercise.name }} · {{ exercise.pivot.sets }} sets
+                                <span v-if="exercise.pivot.reps">× {{ exercise.pivot.reps }} reps</span>
+                                <span v-else>· {{ exercise.pivot.duration_seconds }} sec</span>
+                            </li>
+                        </ul>
+                        <button type="button" class="membership-button" @click="selectTemplate(template)">
+                            LOG THIS WORKOUT
+                        </button>
+                    </article>
+                </div>
+            </section>
+
+            <section v-if="selectedTemplate" class="profile-section">
+                <div class="section-title"><span>04</span> SAVE WORKOUT</div>
+                <form class="calorie-form" @submit.prevent="saveWorkout">
+                    <label class="calorie-wide">NOTES
+                        <input v-model="workoutNotes" type="text" maxlength="2000" placeholder="How did the workout feel?" />
+                    </label>
+                    <p v-if="workoutMessage" class="calorie-message success">{{ workoutMessage }}</p>
+                    <button type="submit" class="membership-button calorie-submit" :disabled="savingWorkout">
+                        {{ savingWorkout ? 'SAVING...' : 'SAVE COMPLETED WORKOUT' }}
+                    </button>
+                </form>
+            </section>
+
+            <section v-if="history.length" class="profile-section">
+                <div class="section-title"><span>05</span> YOUR WORKOUT HISTORY</div>
+                <div class="workout-history">
+                    <article v-for="workout in history" :key="workout.id">
+                        <strong>{{ workout.name }}</strong>
+                        <span>{{ new Date(workout.started_at).toLocaleDateString() }}</span>
+                    </article>
+                </div>
+            </section>
         </main>
     </div>
 </template>
@@ -74,6 +117,12 @@ const isMenuOpen = ref(false);
 const loading = ref(false);
 const errorMessage = ref('');
 const recommendation = ref(null);
+const templates = ref([]);
+const history = ref([]);
+const selectedTemplate = ref(null);
+const workoutNotes = ref('');
+const savingWorkout = ref(false);
+const workoutMessage = ref('');
 const workoutType = ref('strength');
 const activityLevels = [
     { value: 'sedentary', label: 'Sedentary — little or no exercise' },
@@ -140,10 +189,66 @@ const loadRecommendation = async () => {
     }
 };
 
+const loadWorkoutData = async () => {
+    const [templatesResponse, historyResponse] = await Promise.all([
+        fetch('/api/workout-templates', { headers: { Accept: 'application/json' } }),
+        fetch('/api/workouts', { headers: { Accept: 'application/json' } }),
+    ]);
+
+    if (templatesResponse.ok) templates.value = (await templatesResponse.json()).workouts;
+    if (historyResponse.ok) history.value = (await historyResponse.json()).workouts;
+};
+
+const selectTemplate = (template) => {
+    selectedTemplate.value = template;
+    workoutMessage.value = '';
+};
+
+const saveWorkout = async () => {
+    savingWorkout.value = true;
+    workoutMessage.value = '';
+    try {
+        const response = await fetch('/api/workouts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-XSRF-TOKEN': csrfToken() },
+            body: JSON.stringify({
+                workout_template_id: selectedTemplate.value.id,
+                name: selectedTemplate.value.name,
+                type: selectedTemplate.value.type,
+                started_at: new Date().toISOString(),
+                completed_at: new Date().toISOString(),
+                notes: workoutNotes.value,
+                exercises: selectedTemplate.value.exercises.map((exercise) => ({
+                    exercise_id: exercise.id,
+                    sets_completed: exercise.pivot.sets,
+                    reps_completed: exercise.pivot.reps,
+                    duration_seconds: exercise.pivot.duration_seconds,
+                })),
+            }),
+        });
+        if (response.status === 401) {
+            router.push('/login');
+            return;
+        }
+        if (!response.ok) throw new Error('Could not save workout');
+        workoutMessage.value = 'Workout saved successfully.';
+        workoutNotes.value = '';
+        await loadWorkoutData();
+    } catch (error) {
+        workoutMessage.value = 'Could not save workout.';
+        console.error('WORKOUT SAVE ERROR:', error);
+    } finally {
+        savingWorkout.value = false;
+    }
+};
+
 const logout = async () => {
     await fetch('/logout', { method: 'POST', headers: { Accept: 'application/json', 'X-XSRF-TOKEN': csrfToken() } });
     router.push('/');
 };
 
-onMounted(loadProfile);
+onMounted(async () => {
+    await loadProfile();
+    await loadWorkoutData();
+});
 </script>

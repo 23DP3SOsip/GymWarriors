@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use App\Http\Controllers\CalorieProfileController;
 use App\Http\Controllers\QrCodeController;
 use App\Http\Controllers\BodyMetricController;
+use App\Http\Controllers\WorkoutController;
 
 /*
 |--------------------------------------------------------------------------
@@ -398,6 +399,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/calorie-profile', [CalorieProfileController::class, 'show']);
     Route::post('/api/calorie-profile', [CalorieProfileController::class, 'store']);
     Route::post('/api/workout-recommendations', [CalorieProfileController::class, 'workoutRecommendation']);
+    Route::get('/api/workout-templates', [WorkoutController::class, 'templates']);
+    Route::get('/api/workouts', [WorkoutController::class, 'history']);
+    Route::post('/api/workouts', [WorkoutController::class, 'store']);
 });
 /*
 | VUE FALLBACK
