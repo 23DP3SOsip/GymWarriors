@@ -9,6 +9,7 @@
                 <router-link to="/profile#friends">FRIENDS</router-link>
                 <router-link to="/calories">CALORIE TRACKING</router-link>
                 <router-link to="/workout" class="nav-current">WORKOUTS AND NUTRITION</router-link>
+                <router-link to="/reports">REPORTS</router-link>
             </nav>
             <button type="button" class="page-mobile-burger" @click="isMenuOpen = !isMenuOpen" :aria-expanded="isMenuOpen" aria-label="Open navigation menu">
                 <span></span><span></span><span></span>
@@ -24,6 +25,7 @@
             <router-link to="/profile#friends" @click="isMenuOpen = false">FRIENDS</router-link>
             <router-link to="/calories" @click="isMenuOpen = false">CALORIE TRACKING</router-link>
             <router-link to="/workout" @click="isMenuOpen = false">WORKOUTS AND NUTRITION</router-link>
+            <router-link to="/reports" @click="isMenuOpen = false">REPORTS</router-link>
             <button type="button" @click="logout">LOG OUT</button>
         </div>
 

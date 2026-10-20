@@ -18,6 +18,7 @@ class User extends Authenticatable
         'email',
         'password',
         'phone',
+        'role',
     ];
 
     protected function casts(): array
@@ -25,6 +26,11 @@ class User extends Authenticatable
         return [
             'password' => 'hashed',
         ];
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
     }
 
     public function planPurchases()
@@ -35,5 +41,15 @@ class User extends Authenticatable
     public function bodyMetrics()
     {
         return $this->hasMany(BodyMetric::class);
+    }
+
+    public function calorieProfile()
+    {
+        return $this->hasOne(CalorieProfile::class);
+    }
+
+    public function workouts()
+    {
+        return $this->hasMany(UserWorkout::class);
     }
 }

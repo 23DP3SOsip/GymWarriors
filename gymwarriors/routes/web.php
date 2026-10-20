@@ -12,6 +12,7 @@ use App\Http\Controllers\CalorieProfileController;
 use App\Http\Controllers\QrCodeController;
 use App\Http\Controllers\BodyMetricController;
 use App\Http\Controllers\WorkoutController;
+use App\Http\Controllers\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -402,6 +403,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/workout-templates', [WorkoutController::class, 'templates']);
     Route::get('/api/workouts', [WorkoutController::class, 'history']);
     Route::post('/api/workouts', [WorkoutController::class, 'store']);
+    Route::get('/api/reports', [ReportController::class, 'index']);
 });
 /*
 | VUE FALLBACK

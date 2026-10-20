@@ -7,6 +7,7 @@ import ProfilePage from '../pages/ProfilePage.vue';
 import PlansPage from '../pages/PlansPage.vue';
 import CaloriesPage from '../pages/CaloriesPage.vue';
 import WorkoutPage from '../pages/WorkoutPage.vue';
+import ReportsPage from '../pages/ReportsPage.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -54,6 +55,11 @@ const router = createRouter({
             path: '/workout',
             name: 'workout',
             component: WorkoutPage,
+        },
+        {
+            path: '/reports',
+            name: 'reports',
+            component: ReportsPage,
         },
     ],
 });

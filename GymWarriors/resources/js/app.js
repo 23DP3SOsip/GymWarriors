@@ -1,7 +1,11 @@
-import { createApp } from 'vue'
-import App from './App.vue'
-import router from './router/index.js'
-import '../css/app.css'
-import '../css/body-metrics.css'
+import '../css/app.css';
+import '../css/calories.css'
+import '../css/qr-code.css'
 
-createApp(App).use(router).mount('#app')
+import { createApp } from 'vue';
+import App from './App.vue';
+import router from './router';
+
+createApp(App)
+    .use(router)
+    .mount('#app');
