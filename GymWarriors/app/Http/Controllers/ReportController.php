@@ -20,7 +20,7 @@ class ReportController extends Controller
         ]);
 
         $user = $request->user();
-        $isAdmin = $user->role === 'admin';
+        $isAdmin = $user->isAdmin();
         $from = isset($validated['from']) ? Carbon::parse($validated['from'])->startOfDay() : null;
         $to = isset($validated['to']) ? Carbon::parse($validated['to'])->endOfDay() : null;
 

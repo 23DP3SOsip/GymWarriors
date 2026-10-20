@@ -18,13 +18,13 @@ class User extends Authenticatable
         'email',
         'password',
         'phone',
-        'role',
     ];
 
     protected function casts(): array
     {
         return [
             'password' => 'hashed',
+            'role' => 'string',
         ];
     }
 

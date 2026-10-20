@@ -7,15 +7,3 @@ https://docs.google.com/document/d/1oEPkM7nhTVBrXZoFuMKZvvzTzmru_mypJKF636SYJiE/
 
 Canva:
 https://canva.link/1q0ip1cmtbxqaz7
-
-## Reports
-
-Authenticated users can open `/reports` to view their payment and visit
-history, summary cards, date/location filters, and charts.
-
-Users with the `admin` role see all members' payments and visits. Promote a
-user locally with:
-
-```powershell
-php artisan tinker --execute="App\Models\User::where('email', 'admin@example.com')->update(['role' => 'admin']);"
-```

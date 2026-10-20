@@ -404,6 +404,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/workouts', [WorkoutController::class, 'history']);
     Route::post('/api/workouts', [WorkoutController::class, 'store']);
     Route::get('/api/reports', [ReportController::class, 'index']);
+    Route::middleware('admin')->get('/api/admin/reports', [ReportController::class, 'index']);
 });
 /*
 | VUE FALLBACK
