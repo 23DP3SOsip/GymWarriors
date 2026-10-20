@@ -13,6 +13,7 @@ use App\Http\Controllers\QrCodeController;
 use App\Http\Controllers\BodyMetricController;
 use App\Http\Controllers\WorkoutController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\FriendController;
 
 /*
 |--------------------------------------------------------------------------
@@ -405,6 +406,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/workouts', [WorkoutController::class, 'store']);
     Route::get('/api/reports', [ReportController::class, 'index']);
     Route::middleware('admin')->get('/api/admin/reports', [ReportController::class, 'index']);
+    Route::get('/api/friends', [FriendController::class, 'index']);
+    Route::get('/api/friends/search', [FriendController::class, 'search']);
+    Route::post('/api/friends', [FriendController::class, 'store']);
+    Route::patch('/api/friends/{friendship}', [FriendController::class, 'update']);
+    Route::delete('/api/friends/{friendship}', [FriendController::class, 'destroy']);
 });
 /*
 | VUE FALLBACK

@@ -143,7 +143,7 @@
                     </div>
 
                     <div class="profile-stat">
-                        <strong>0</strong>
+                        <strong>{{ friends.length }}</strong>
                         <span>FRIENDS</span>
                     </div>
                 </div>
@@ -335,13 +335,47 @@
                     FRIENDS
                 </div>
 
-                <div class="friends-empty">
-                    <h2>NO FRIENDS YET</h2>
+                <div class="friends-tools">
+                    <form @submit.prevent="searchFriends" class="friends-search">
+                        <input v-model="friendQuery" type="search" minlength="2" placeholder="Search by name or email">
+                        <button type="submit">SEARCH</button>
+                    </form>
+                    <p v-if="friendsError" class="friends-error">{{ friendsError }}</p>
+                    <div v-if="searchResults.length" class="friend-results">
+                        <div v-for="candidate in searchResults" :key="candidate.id" class="friend-row">
+                            <span>{{ candidate.first_name }} {{ candidate.last_name }}<small>{{ candidate.email }}</small></span>
+                            <button type="button" @click="sendFriendRequest(candidate.id)">ADD FRIEND</button>
+                        </div>
+                    </div>
+                </div>
 
-                    <p>
-                        Train together, stay motivated. Your Gym Warriors
-                        friends will appear here.
-                    </p>
+                <div v-if="incomingRequests.length" class="friend-request-list">
+                    <h2>FRIEND REQUESTS</h2>
+                    <div v-for="request in incomingRequests" :key="request.request_id" class="friend-row">
+                        <span>{{ request.first_name }} {{ request.last_name }}<small>{{ request.email }}</small></span>
+                        <span class="friend-actions">
+                            <button type="button" @click="respondToRequest(request.request_id, 'accepted')">ACCEPT</button>
+                            <button type="button" class="secondary" @click="respondToRequest(request.request_id, 'rejected')">DECLINE</button>
+                        </span>
+                    </div>
+                </div>
+
+                <div v-if="friends.length" class="friend-list">
+                    <div v-for="friend in friends" :key="friend.id" class="friend-card">
+                        <div>
+                            <h2>{{ friend.first_name }} {{ friend.last_name }}</h2>
+                            <p>{{ friend.email }}</p>
+                        </div>
+                        <div class="friend-stats">
+                            <strong>{{ friend.workouts_count }}</strong><span>WORKOUTS</span>
+                            <strong>{{ friend.checkins_count }}</strong><span>CHECK-INS</span>
+                        </div>
+                        <button type="button" class="friend-remove" @click="removeFriend(friend.id)">REMOVE</button>
+                    </div>
+                </div>
+                <div v-else class="friends-empty">
+                    <h2>NO FRIENDS YET</h2>
+                    <p>Train together, stay motivated. Your Gym Warriors friends will appear here.</p>
                 </div>
             </section>
 
@@ -382,6 +416,11 @@ const user = reactive({
 
 const membership = ref(null);
 const loadingMembership = ref(true);
+const friends = ref([]);
+const incomingRequests = ref([]);
+const friendQuery = ref('');
+const searchResults = ref([]);
+const friendsError = ref('');
 
 const initials = computed(() => {
     const first = user.first_name?.charAt(0) || '';
@@ -433,6 +472,69 @@ const loadProfile = async () => {
     } finally {
         loadingMembership.value = false;
     }
+};
+
+const loadFriends = async () => {
+    try {
+        const response = await fetch('/api/friends', { headers: { Accept: 'application/json' } });
+        if (response.status === 401) return router.push('/login');
+        if (!response.ok) throw new Error('Could not load friends.');
+        const data = await response.json();
+        friends.value = data.friends;
+        incomingRequests.value = data.incoming_requests;
+    } catch (error) {
+        friendsError.value = error.message;
+    }
+};
+
+const searchFriends = async () => {
+    if (friendQuery.value.trim().length < 2) return;
+    friendsError.value = '';
+    const response = await fetch(`/api/friends/search?query=${encodeURIComponent(friendQuery.value.trim())}`, {
+        headers: { Accept: 'application/json' },
+    });
+    if (!response.ok) {
+        friendsError.value = 'Could not search users.';
+        return;
+    }
+    searchResults.value = (await response.json()).users;
+};
+
+const sendFriendRequest = async (userId) => {
+    const response = await fetch('/api/friends', {
+        method: 'POST',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        friendsError.value = data.message || 'Could not send request.';
+        return;
+    }
+    searchResults.value = searchResults.value.filter((user) => user.id !== userId);
+};
+
+const respondToRequest = async (requestId, status) => {
+    const response = await fetch(`/api/friends/${requestId}`, {
+        method: 'PATCH',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+    });
+    if (!response.ok) {
+        friendsError.value = 'Could not update request.';
+        return;
+    }
+    await loadFriends();
+};
+
+const removeFriend = async (friendId) => {
+    const friend = friends.value.find((item) => item.id === friendId);
+    if (!friend) return;
+    const response = await fetch(`/api/friends/${friend.friendship_id}`, {
+        method: 'DELETE',
+        headers: { Accept: 'application/json' },
+    });
+    if (response.ok) await loadFriends();
 };
 
 const qrImage = ref('');
@@ -560,6 +662,7 @@ const logout = async () => {
 onMounted(() => {
     loadProfile();
     loadQr();
+    loadFriends();
 
     timer = setInterval(() => {
         now.value = Date.now();
@@ -570,3 +673,138 @@ onUnmounted(() => {
     clearInterval(timer);
 });
 </script>
+
+<style scoped>
+.friends-tools,
+.friend-request-list,
+.friend-list {
+    display: grid;
+    gap: 16px;
+}
+
+.friends-search {
+    display: flex;
+    gap: 12px;
+}
+
+.friends-search input {
+    flex: 1;
+    padding: 14px;
+    border: 1px solid #333;
+    background: #111;
+    color: #fff;
+    font: inherit;
+}
+
+.friends-search button,
+.friend-row button {
+    border: 1px solid #e50914;
+    background: #e50914;
+    color: #fff;
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+
+.friend-row,
+.friend-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 20px;
+    background: #111;
+    border: 1px solid #292929;
+}
+
+.friend-row span,
+.friend-card p {
+    color: #fff;
+}
+
+.friend-row small {
+    display: block;
+    margin-top: 5px;
+    color: #777;
+}
+
+.friend-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.friend-row button.secondary {
+    border-color: #444;
+    background: transparent;
+}
+
+.friend-remove {
+    min-width: 92px;
+    padding: 10px 14px;
+    border: 1px solid rgba(229, 9, 20, 0.45);
+    border-radius: 3px;
+    background: rgba(229, 9, 20, 0.08);
+    color: #ff5a62;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.4px;
+    cursor: pointer;
+    transition: background 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.friend-remove:hover {
+    border-color: #e50914;
+    background: #e50914;
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.friend-remove:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+}
+
+.friend-card h2,
+.friend-request-list h2 {
+    font-size: 18px;
+}
+
+.friend-card p {
+    margin-top: 6px;
+    color: #777;
+}
+
+.friend-stats {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.friend-stats strong {
+    color: #e50914;
+    font-size: 25px;
+}
+
+.friend-stats span {
+    margin-right: 12px;
+    color: #777;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.friends-error {
+    color: #ff6b6b;
+}
+
+@media (max-width: 700px) {
+    .friends-search,
+    .friend-row,
+    .friend-card {
+        align-items: stretch;
+        flex-direction: column;
+    }
+}
+</style>

@@ -52,4 +52,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserWorkout::class);
     }
+
+    public function friendshipsSent()
+    {
+        return $this->hasMany(Friendship::class, 'requester_id');
+    }
+
+    public function friendshipsReceived()
+    {
+        return $this->hasMany(Friendship::class, 'addressee_id');
+    }
 }
