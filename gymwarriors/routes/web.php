@@ -14,6 +14,7 @@ use App\Http\Controllers\BodyMetricController;
 use App\Http\Controllers\WorkoutController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\FriendController;
+use App\Http\Controllers\ProgressController;
 
 /*
 |--------------------------------------------------------------------------
@@ -411,6 +412,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/friends', [FriendController::class, 'store']);
     Route::patch('/api/friends/{friendship}', [FriendController::class, 'update']);
     Route::delete('/api/friends/{friendship}', [FriendController::class, 'destroy']);
+    Route::get('/api/progress', [ProgressController::class, 'index']);
 });
 /*
 | VUE FALLBACK

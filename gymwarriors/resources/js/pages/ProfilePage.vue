@@ -149,9 +149,58 @@
                 </div>
             </section>
 
-            <section class="profile-section" id="membership">
+            <section class="profile-section progress-section" id="progress">
                 <div class="section-title">
                     <span>03</span>
+                    PROGRESS ANALYSIS
+                </div>
+
+                <div class="progress-toolbar">
+                    <p>Track your body measurements and training activity.</p>
+                    <select v-model="progressDays" @change="loadProgress" aria-label="Progress period">
+                        <option :value="30">LAST 30 DAYS</option>
+                        <option :value="90">LAST 90 DAYS</option>
+                        <option :value="365">LAST YEAR</option>
+                    </select>
+                </div>
+
+                <div v-if="progressError" class="friends-error">{{ progressError }}</div>
+                <div v-if="progress" class="progress-summary">
+                    <div><strong>{{ progress.summary.weight_change === null ? '—' : signed(progress.summary.weight_change) + ' kg' }}</strong><span>WEIGHT CHANGE</span></div>
+                    <div><strong>{{ progress.summary.waist_change === null ? '—' : signed(progress.summary.waist_change) + ' cm' }}</strong><span>WAIST CHANGE</span></div>
+                    <div><strong>{{ progress.summary.workouts_count }}</strong><span>WORKOUTS</span></div>
+                    <div><strong>{{ progress.summary.checkins_count }}</strong><span>CHECK-INS</span></div>
+                </div>
+
+                <div v-if="progress" class="progress-charts">
+                    <div class="progress-chart">
+                        <h2>BODY MEASUREMENTS</h2>
+                        <svg v-if="weightPoints" viewBox="0 0 600 220" role="img" aria-label="Weight progress chart">
+                            <polyline class="chart-line chart-weight" :points="weightPoints" />
+                            <circle v-for="point in weightDots" :key="point.key" class="chart-dot" :cx="point.x" :cy="point.y" r="4" />
+                        </svg>
+                        <p v-else class="empty-progress">Add body measurements to see your progress.</p>
+                        <div class="chart-legend"><span class="legend-weight"></span>Weight (kg)</div>
+                    </div>
+                    <div class="progress-chart">
+                        <h2>ACTIVITY</h2>
+                        <div class="activity-bars">
+                            <div v-for="day in activityPreview" :key="day.date" class="activity-day">
+                                <div class="activity-stack">
+                                    <i class="activity-workout" :style="{ height: `${barHeight(day.workouts, maxActivity)}%` }"></i>
+                                    <i class="activity-checkin" :style="{ height: `${barHeight(day.checkins, maxActivity)}%` }"></i>
+                                </div>
+                                <small>{{ shortProgressDate(day.date) }}</small>
+                            </div>
+                        </div>
+                        <div class="chart-legend"><span class="legend-workout"></span>Workouts <span class="legend-checkin"></span>Check-ins</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="profile-section" id="membership">
+                <div class="section-title">
+                    <span>04</span>
                     MEMBERSHIP
                 </div>
 
@@ -270,7 +319,7 @@
 
             <section v-if="membership" class="profile-section" id="qr">
                 <div class="section-title">
-                    <span>04</span>
+                    <span>05</span>
                     ENTRY QR CODE
                 </div>
 
@@ -331,7 +380,7 @@
 
             <section class="profile-section" id="friends">
                 <div class="section-title">
-                    <span>05</span>
+                    <span>06</span>
                     FRIENDS
                 </div>
 
@@ -381,7 +430,7 @@
 
             <section class="profile-section">
                 <div class="section-title">
-                    <span>06</span>
+                    <span>07</span>
                     ACCOUNT
                 </div>
 
@@ -416,6 +465,9 @@ const user = reactive({
 
 const membership = ref(null);
 const loadingMembership = ref(true);
+const progress = ref(null);
+const progressDays = ref(90);
+const progressError = ref('');
 const friends = ref([]);
 const incomingRequests = ref([]);
 const friendQuery = ref('');
@@ -428,6 +480,37 @@ const initials = computed(() => {
 
     return (first + last).toUpperCase();
 });
+
+const weightDots = computed(() => {
+    const values = (progress.value?.metrics || [])
+        .filter((metric) => metric.weight_kg !== null)
+        .map((metric) => Number(metric.weight_kg));
+
+    if (values.length < 2) {
+        return [];
+    }
+
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const range = max - min || 1;
+    const width = 560;
+    const height = 170;
+
+    return progress.value.metrics
+        .filter((metric) => metric.weight_kg !== null)
+        .map((metric, index, items) => ({
+            key: metric.entry_date,
+            x: 20 + (index / Math.max(items.length - 1, 1)) * width,
+            y: 20 + (1 - (Number(metric.weight_kg) - min) / range) * height,
+        }));
+});
+
+const weightPoints = computed(() => weightDots.value.map((point) => `${point.x},${point.y}`).join(' '));
+const activityPreview = computed(() => (progress.value?.activity || []).filter((_, index, items) => index % Math.max(Math.ceil(items.length / 14), 1) === 0));
+const maxActivity = computed(() => Math.max(...activityPreview.value.map((day) => day.workouts + day.checkins), 1));
+const barHeight = (value, max) => value ? Math.max((value / max) * 100, 8) : 0;
+const signed = (value) => `${value > 0 ? '+' : ''}${Number(value).toFixed(1)}`;
+const shortProgressDate = (value) => new Date(`${value}T00:00:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 
 const formatDate = (date) => {
     if (!date) {
@@ -471,6 +554,29 @@ const loadProfile = async () => {
         console.error('PROFILE ERROR:', error);
     } finally {
         loadingMembership.value = false;
+    }
+};
+
+const loadProgress = async () => {
+    progressError.value = '';
+
+    try {
+        const response = await fetch(`/api/progress?days=${progressDays.value}`, {
+            headers: { Accept: 'application/json' },
+        });
+
+        if (response.status === 401) {
+            router.push('/login');
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error('Could not load progress analysis.');
+        }
+
+        progress.value = await response.json();
+    } catch (error) {
+        progressError.value = error.message;
     }
 };
 
@@ -663,6 +769,7 @@ onMounted(() => {
     loadProfile();
     loadQr();
     loadFriends();
+    loadProgress();
 
     timer = setInterval(() => {
         now.value = Date.now();
@@ -799,12 +906,217 @@ onUnmounted(() => {
     color: #ff6b6b;
 }
 
+.progress-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 25px;
+    font-family: inherit;
+}
+
+.progress-toolbar p {
+    color: #777;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.progress-toolbar select {
+    padding: 11px 14px;
+    border: 1px solid #333;
+    background: #111;
+    color: #fff;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.progress-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin-bottom: 25px;
+    border: 1px solid #222;
+    font-family: inherit;
+}
+
+.progress-summary div {
+    padding: 24px 18px;
+    border-right: 1px solid #222;
+}
+
+.progress-summary div:last-child {
+    border-right: 0;
+}
+
+.progress-summary strong {
+    display: block;
+    color: #e50914;
+    font-size: 28px;
+    font-weight: 900;
+}
+
+.progress-summary span {
+    display: block;
+    margin-top: 8px;
+    color: #777;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.progress-charts {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+.progress-chart {
+    min-width: 0;
+    padding: 22px;
+    background: #111;
+    border: 1px solid #292929;
+    font-family: inherit;
+}
+
+.progress-chart h2 {
+    margin-bottom: 18px;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.progress-chart svg {
+    width: 100%;
+    height: 220px;
+    overflow: visible;
+    background: linear-gradient(to bottom, transparent 49%, #292929 50%, transparent 51%);
+}
+
+.chart-line {
+    fill: none;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.chart-weight {
+    stroke: #e50914;
+}
+
+.chart-dot {
+    fill: #fff;
+    stroke: #e50914;
+    stroke-width: 2;
+}
+
+.chart-legend {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 14px;
+    color: #777;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.chart-legend span {
+    width: 10px;
+    height: 10px;
+    display: inline-block;
+    margin-left: 8px;
+}
+
+.chart-legend span:first-child {
+    margin-left: 0;
+}
+
+.legend-weight,
+.legend-workout {
+    background: #e50914;
+}
+
+.legend-checkin {
+    background: #fff;
+}
+
+.activity-bars {
+    height: 220px;
+    display: flex;
+    align-items: end;
+    gap: 7px;
+    overflow: hidden;
+    border-bottom: 1px solid #333;
+}
+
+.activity-day {
+    min-width: 24px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    align-items: center;
+    gap: 7px;
+}
+
+.activity-stack {
+    width: 18px;
+    height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    gap: 2px;
+}
+
+.activity-stack i {
+    display: block;
+    min-height: 0;
+}
+
+.activity-workout {
+    background: #e50914;
+}
+
+.activity-checkin {
+    background: #fff;
+}
+
+.activity-day small {
+    color: #888;
+    font-size: 9px;
+    white-space: nowrap;
+}
+
+.empty-progress {
+    height: 220px;
+    display: grid;
+    place-items: center;
+    color: #777;
+    text-align: center;
+}
+
 @media (max-width: 700px) {
     .friends-search,
     .friend-row,
     .friend-card {
         align-items: stretch;
         flex-direction: column;
+    }
+
+    .progress-toolbar,
+    .progress-charts {
+        align-items: stretch;
+        grid-template-columns: 1fr;
+        flex-direction: column;
+    }
+
+    .progress-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .progress-summary div:nth-child(2) {
+        border-right: 0;
     }
 }
 </style>
