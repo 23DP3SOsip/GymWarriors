@@ -11,6 +11,7 @@
                 <router-link to="/profile#membership">MEMBERSHIP</router-link>
                 <router-link to="/profile#friends">FRIENDS</router-link>
                 <router-link to="/calories" class="nav-current">CALORIE TRACKING</router-link>
+                <router-link to="/workout">NUTRITION</router-link>
             </nav>
 
             <button
@@ -53,6 +54,9 @@
 
             <router-link to="/calories" @click="isMenuOpen = false">
                 CALORIE TRACKING
+            </router-link>
+            <router-link to="/workout" @click="isMenuOpen = false">
+                NUTRITION
             </router-link>
 
             <button type="button" @click="logout">

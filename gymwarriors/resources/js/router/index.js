@@ -6,6 +6,7 @@ import RegisterPage from '../pages/RegisterPage.vue';
 import ProfilePage from '../pages/ProfilePage.vue';
 import PlansPage from '../pages/PlansPage.vue';
 import CaloriesPage from '../pages/CaloriesPage.vue';
+import WorkoutPage from '../pages/WorkoutPage.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -48,6 +49,11 @@ const router = createRouter({
             path: '/calories',
             name: 'calories',
             component: CaloriesPage,
+        },
+        {
+            path: '/workout',
+            name: 'workout',
+            component: WorkoutPage,
         },
     ],
 });

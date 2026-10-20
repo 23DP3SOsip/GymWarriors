@@ -102,4 +102,51 @@ class CalorieProfileTest extends TestCase
             ->assertOk()
             ->assertJsonPath('calorie_profile', null);
     }
+
+    public function test_authenticated_user_receives_workout_specific_recommendations(): void
+    {
+        $user = $this->createUser();
+
+        $this->actingAs($user)
+            ->postJson('/api/workout-recommendations', [
+                'workout_type' => 'strength',
+                'height_cm' => 180,
+                'weight_kg' => 75.5,
+                'age' => 25,
+                'sex' => 'male',
+                'activity_level' => 'moderate',
+                'goal' => 'maintain',
+            ])
+            ->assertOk()
+            ->assertJsonPath('workout_type', 'strength')
+            ->assertJsonPath('workout_name', 'Strength training')
+            ->assertJsonStructure([
+                'calories' => ['daily_target', 'before', 'after'],
+                'protein_target',
+                'before',
+                'after',
+                'hydration',
+                'tips',
+            ]);
+    }
+
+    public function test_workout_recommendations_require_a_supported_workout_type(): void
+    {
+        $user = $this->createUser();
+
+        $this->actingAs($user)
+            ->postJson('/api/workout-recommendations', [
+                'workout_type' => 'unknown',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'workout_type',
+                'height_cm',
+                'weight_kg',
+                'age',
+                'sex',
+                'activity_level',
+                'goal',
+            ]);
+    }
 }

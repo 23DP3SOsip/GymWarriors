@@ -181,9 +181,63 @@
     color: #777;
 }
 
+.recommendation-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.recommendation-heading h2 {
+    font-size: 28px;
+}
+
+.recommendation-heading span {
+    color: #e50914;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.recommendation-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    background: #222;
+    border: 1px solid #222;
+}
+
+.recommendation-grid article {
+    padding: 22px;
+    background: #111;
+}
+
+.recommendation-grid strong {
+    color: #e50914;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+}
+
+.recommendation-grid p {
+    margin-top: 10px;
+    color: #aaa;
+    line-height: 1.5;
+}
+
+.recommendation-tips {
+    display: grid;
+    gap: 8px;
+    margin: 20px 0 0;
+    padding-left: 20px;
+    color: #aaa;
+    line-height: 1.5;
+}
+
 @media (max-width: 700px) {
     .calorie-form,
-    .goal-options {
+    .goal-options,
+    .recommendation-grid {
         grid-template-columns: 1fr;
     }
 

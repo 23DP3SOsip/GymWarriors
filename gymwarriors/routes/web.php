@@ -397,7 +397,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/api/calorie-profile', [CalorieProfileController::class, 'show']);
     Route::post('/api/calorie-profile', [CalorieProfileController::class, 'store']);
-
+    Route::post('/api/workout-recommendations', [CalorieProfileController::class, 'workoutRecommendation']);
 });
 /*
 | VUE FALLBACK
