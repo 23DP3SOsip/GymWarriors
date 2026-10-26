@@ -49,32 +49,35 @@ class AuthController extends Controller
     }
 
     public function login(Request $request)
-    {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string',
-        ]);
+{
+    $credentials = $request->validate([
+        'email' => 'required|email',
+        'password' => 'required|string',
+    ]);
 
-        if (!Auth::attempt($credentials)) {
-            throw ValidationException::withMessages([
-                'email' => ['Nepareizs e-pasts vai parole.'],
-            ]);
-        }
-
-        $request->session()->regenerate();
-
-        $user = Auth::user();
-
-        return response()->json([
-            'message' => 'Ielogošanās veiksmīga!',
-            'user' => [
-                'id' => $user->id,
-                'first_name' => $user->first_name,
-                'last_name' => $user->last_name,
-                'email' => $user->email,
-            ],
+    if (!Auth::attempt($credentials)) {
+        throw ValidationException::withMessages([
+            'email' => ['Nepareizs e-pasts vai parole.'],
         ]);
     }
+
+    $request->session()->regenerate();
+
+    $user = Auth::user();
+
+    return response()->json([
+        'message' => 'Pieteikšanās veiksmīga!',
+        'user' => [
+            'id' => $user->id,
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'is_admin' => $user->isAdmin(),
+        ],
+        'redirect' => $user->isAdmin() ? '/admin' : '/',
+    ]);
+}
 
     public function logout(Request $request)
     {
