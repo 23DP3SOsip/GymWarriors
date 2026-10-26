@@ -8,6 +8,7 @@ import PlansPage from '../pages/PlansPage.vue';
 import CaloriesPage from '../pages/CaloriesPage.vue';
 import WorkoutPage from '../pages/WorkoutPage.vue';
 import ReportsPage from '../pages/ReportsPage.vue';
+import AdminPage from '../pages/AdminPage.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -60,6 +61,11 @@ const router = createRouter({
             path: '/reports',
             name: 'reports',
             component: ReportsPage,
+        },
+        {
+            path: '/admin',
+            name: 'admin',
+            component: AdminPage,
         },
     ],
 });

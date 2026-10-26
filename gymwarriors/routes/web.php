@@ -15,6 +15,7 @@ use App\Http\Controllers\WorkoutController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\FriendController;
 use App\Http\Controllers\ProgressController;
+use App\Http\Middleware\EnsureUserIsAdmin;
 
 /*
 |--------------------------------------------------------------------------
@@ -414,6 +415,15 @@ Route::middleware('auth')->group(function () {
     Route::delete('/api/friends/{friendship}', [FriendController::class, 'destroy']);
     Route::get('/api/progress', [ProgressController::class, 'index']);
 });
+
+Route::middleware(['auth', 'admin'])->get('/api/admin/dashboard', function () {
+    return response()->json([
+        'users' => \App\Models\User::count(),
+        'plans' => \App\Models\Plan::count(),
+        'locations' => \App\Models\Location::count(),
+    ]);
+});
+
 /*
 | VUE FALLBACK
 |--------------------------------------------------------------------------

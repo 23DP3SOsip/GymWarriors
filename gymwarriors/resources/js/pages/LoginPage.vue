@@ -103,7 +103,11 @@ const login = async () => {
             return;
         }
 
-        router.push('/profile');
+        if (data.user?.is_admin) {
+            router.push('/admin');
+        } else {
+            router.push('/profile');
+        }
 
     } catch (err) {
         error.value = 'Something went wrong. Please try again.';
