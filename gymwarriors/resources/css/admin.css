@@ -859,6 +859,291 @@
     overflow-wrap: anywhere;
 }
 
+.admin-plans-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 20px;
+}
+
+.admin-plans-heading h2 {
+    margin: 0 0 7px;
+    color: #fff;
+    font-size: 23px;
+    font-weight: 900;
+}
+
+.admin-plans-heading p,
+.admin-plans-heading > span {
+    margin: 0;
+    color: #888;
+    font-size: 12px;
+}
+
+.admin-plans-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    align-items: start;
+    gap: 18px;
+}
+
+.admin-plan-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    align-items: start;
+    gap: 16px;
+}
+
+.admin-plan-card,
+.admin-plan-editor {
+    min-width: 0;
+    padding: 21px;
+    background: var(--admin-surface);
+    border: 1px solid var(--admin-border);
+}
+
+.admin-plan-card > header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.admin-plan-card > header .admin-eyebrow {
+    margin: 0 0 8px;
+}
+
+.admin-plan-card h3,
+.admin-plan-editor h3 {
+    margin: 0;
+    color: #fff;
+    font-size: 20px;
+    font-weight: 900;
+}
+
+.admin-plan-card > header > strong {
+    color: #fff;
+    font-size: 20px;
+    white-space: nowrap;
+}
+
+.admin-plan-description {
+    min-height: 40px;
+    margin: 16px 0 8px;
+    color: #aaa;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.admin-plan-locations {
+    margin: 0;
+    color: #777;
+    font-size: 11px;
+}
+
+.admin-plan-stat {
+    margin-top: 21px;
+}
+
+.admin-plan-stat > div:first-child {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 9px;
+}
+
+.admin-plan-stat > div:first-child span {
+    color: #999;
+    font-size: 10px;
+}
+
+.admin-plan-stat > div:first-child strong {
+    color: #fff;
+    font-size: 14px;
+}
+
+.admin-plan-bar {
+    height: 7px;
+    overflow: hidden;
+    background: #292929;
+}
+
+.admin-plan-bar span {
+    display: block;
+    height: 100%;
+    background: var(--admin-red);
+    transition: width 0.2s ease;
+}
+
+.admin-plan-stat small {
+    display: block;
+    margin-top: 7px;
+    color: #777;
+    font-size: 10px;
+}
+
+.admin-plan-edit-button {
+    width: 100%;
+    min-height: 39px;
+    margin-top: 18px;
+    border: 1px solid #6a2421;
+    background: #191111;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+}
+
+.admin-plan-editor {
+    position: sticky;
+    top: 20px;
+}
+
+.admin-plan-editor > .admin-eyebrow {
+    margin: 0 0 8px;
+}
+
+.admin-plan-editor h3 {
+    margin-bottom: 18px;
+}
+
+.admin-plan-editor label {
+    display: grid;
+    gap: 7px;
+    margin-top: 14px;
+    color: #aaa;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.admin-plan-editor input,
+.admin-plan-editor textarea {
+    width: 100%;
+    min-width: 0;
+    padding: 11px;
+    border: 1px solid #333;
+    background: #0c0c0c;
+    color: #fff;
+    font: inherit;
+    font-size: 13px;
+}
+
+.admin-plan-features {
+    min-width: 0;
+    margin: 16px 0 0;
+    padding: 12px;
+    border: 1px solid #333;
+}
+
+.admin-plan-features legend {
+    padding: 0 5px;
+    color: #aaa;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.admin-plan-features > p {
+    margin: 0 0 10px;
+    color: #777;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.admin-plan-feature-row {
+    display: grid;
+    grid-template-columns: 17px minmax(0, 1fr) 28px;
+    align-items: center;
+    gap: 7px;
+    margin-top: 8px;
+}
+
+.admin-plan-feature-row > span {
+    color: var(--admin-red);
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.admin-plan-feature-row input {
+    min-width: 0;
+    padding: 9px;
+}
+
+.admin-plan-feature-row button {
+    width: 28px;
+    height: 34px;
+    border: 1px solid #383838;
+    background: #141414;
+    color: #ccc;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.admin-plan-feature-row button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.admin-plan-add-feature {
+    min-height: 32px;
+    margin-top: 10px;
+    padding: 0 10px;
+    border: 1px solid #6a2421;
+    background: #191111;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+}
+
+.admin-plan-add-feature:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.admin-plan-editor textarea {
+    resize: vertical;
+}
+
+.admin-plan-editor-hint {
+    color: #777;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.admin-plan-editor > button[type="submit"] {
+    width: 100%;
+    min-height: 42px;
+    margin-top: 8px;
+    border: 0;
+    background: var(--admin-red);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+}
+
+.admin-plan-editor > button[type="submit"]:disabled {
+    opacity: 0.55;
+    cursor: wait;
+}
+
+.admin-plan-editor-empty {
+    display: grid;
+    min-height: 200px;
+    align-content: center;
+}
+
+.admin-plan-editor-empty p {
+    color: #888;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
 @media (max-width: 1000px) {
     .admin-sidebar {
         flex-basis: 220px;

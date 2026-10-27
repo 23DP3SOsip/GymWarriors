@@ -12,10 +12,18 @@ class Plan extends Model
         'name',
         'price',
         'max_locations',
+        'description',
+        'features',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
         'max_locations' => 'integer',
+        'features' => 'array',
     ];
+
+    public function purchases()
+    {
+        return $this->hasMany(PlanPurchase::class);
+    }
 }

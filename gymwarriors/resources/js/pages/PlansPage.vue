@@ -101,6 +101,9 @@
                     </p>
 
                     <h2>{{ plan.name }}</h2>
+                    <p v-if="plan.description" class="plan-description">
+                        {{ plan.description }}
+                    </p>
 
                     <div class="plan-price">
                         <strong>
@@ -113,18 +116,9 @@
                     <div class="plan-divider"></div>
 
                     <ul class="plan-features">
-                        <li>30 DAYS MEMBERSHIP</li>
-                        <li>30 TOKENS</li>
-
-                        <li v-if="plan.max_locations">
-                            ACCESS TO {{ plan.max_locations }} LOCATIONS
+                        <li v-for="(feature, featureIndex) in planFeatures(plan)" :key="featureIndex">
+                            {{ feature }}
                         </li>
-
-                        <li v-else>
-                            UNLIMITED LOCATIONS
-                        </li>
-
-                        <li>GYM CHECK-IN</li>
                     </ul>
 
                     <button
@@ -279,6 +273,15 @@ const showLocationModal = ref(false);
 const selectedPlan = ref(null);
 const selectedLocationIds = ref([]);
 const locationError = ref('');
+
+const planFeatures = (plan) => plan.features?.length
+    ? plan.features
+    : [
+        '30 DAYS MEMBERSHIP',
+        '30 TOKENS',
+        plan.max_locations ? `ACCESS TO ${plan.max_locations} LOCATIONS` : 'UNLIMITED LOCATIONS',
+        'GYM CHECK-IN',
+    ];
 
 const loadPlans = async () => {
     loading.value = true;

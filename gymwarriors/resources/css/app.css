@@ -1318,6 +1318,13 @@ button {
     letter-spacing: -1px;
 }
 
+.plan-description {
+    margin: -8px 0 22px;
+    color: #999;
+    font-size: 13px;
+    line-height: 1.65;
+}
+
 .plan-price {
     display: flex;
     align-items: baseline;
@@ -3644,4 +3651,3 @@ textarea {
         height: 42px;
     }
 }
-

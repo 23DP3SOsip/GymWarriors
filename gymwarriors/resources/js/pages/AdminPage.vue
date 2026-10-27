@@ -254,6 +254,161 @@
                 </div>
             </section>
 
+            <section v-else-if="activeSection === 'memberships'" class="admin-plans">
+                <div class="admin-plans-heading">
+                    <div>
+                        <h2>Subscription plans</h2>
+                        <p>Edit the public plan details and review membership purchase share.</p>
+                    </div>
+                    <span>{{ totalPlanPurchases }} total purchases</span>
+                </div>
+
+                <p v-if="plansError" class="admin-error">{{ plansError }}</p>
+                <p v-else-if="plansLoading" class="admin-support-empty">Loading plans…</p>
+
+                <div v-else class="admin-plans-layout">
+                    <div class="admin-plan-list">
+                        <article v-for="plan in plans" :key="plan.id" class="admin-plan-card">
+                            <header>
+                                <div>
+                                    <p class="admin-eyebrow">MEMBERSHIP PLAN</p>
+                                    <h3>{{ plan.name }}</h3>
+                                </div>
+                                <strong>€{{ Number(plan.price).toFixed(2) }}</strong>
+                            </header>
+                            <p class="admin-plan-description">
+                                {{ plan.description || 'No description provided.' }}
+                            </p>
+                            <p class="admin-plan-locations">
+                                {{ plan.max_locations === null
+                                    ? 'Unlimited gym locations'
+                                    : `Up to ${plan.max_locations} gym locations` }}
+                            </p>
+
+                            <div class="admin-plan-stat">
+                                <div>
+                                    <span>Share of all purchases</span>
+                                    <strong>{{ plan.purchase_percentage }}%</strong>
+                                </div>
+                                <div
+                                    class="admin-plan-bar"
+                                    role="progressbar"
+                                    :aria-valuenow="plan.purchase_percentage"
+                                    aria-valuemin="0"
+                                    aria-valuemax="100"
+                                    :aria-label="`${plan.name} purchase share`"
+                                >
+                                    <span :style="{ width: `${plan.purchase_percentage}%` }"></span>
+                                </div>
+                                <small>{{ plan.purchases_count }} purchases</small>
+                            </div>
+
+                            <button
+                                type="button"
+                                class="admin-plan-edit-button"
+                                @click="editPlan(plan)"
+                            >
+                                EDIT PLAN
+                            </button>
+                        </article>
+                        <p v-if="!plans.length" class="admin-support-empty">No plans found.</p>
+                    </div>
+
+                    <form
+                        v-if="planDraft"
+                        class="admin-plan-editor"
+                        @submit.prevent="savePlan"
+                    >
+                        <p class="admin-eyebrow">PLAN SETTINGS</p>
+                        <h3>Edit {{ planDraft.name }}</h3>
+                        <p v-if="planSaveError" class="admin-error">{{ planSaveError }}</p>
+
+                        <label>
+                            Plan name
+                            <input v-model.trim="planDraft.name" maxlength="50" required>
+                        </label>
+
+                        <label>
+                            Description
+                            <textarea
+                                v-model="planDraft.description"
+                                maxlength="1000"
+                                rows="4"
+                                placeholder="Describe what this plan includes"
+                            ></textarea>
+                        </label>
+
+                        <label>
+                            Price (€)
+                            <input
+                                v-model="planDraft.price"
+                                type="number"
+                                min="0.01"
+                                max="999999.99"
+                                step="0.01"
+                                required
+                            >
+                        </label>
+
+                        <label>
+                            Maximum gym locations
+                            <input
+                                v-model="planDraft.max_locations"
+                                type="number"
+                                min="1"
+                                max="100"
+                                placeholder="Leave empty for unlimited"
+                            >
+                        </label>
+
+                        <fieldset class="admin-plan-features">
+                            <legend>Tick-marked plan features</legend>
+                            <p>These are display labels. Set the actual location limit separately above.</p>
+                            <div
+                                v-for="(feature, index) in planDraft.features"
+                                :key="index"
+                                class="admin-plan-feature-row"
+                            >
+                                <span aria-hidden="true">✓</span>
+                                <input
+                                    v-model.trim="planDraft.features[index]"
+                                    :aria-label="`Plan feature ${index + 1}`"
+                                    maxlength="150"
+                                    required
+                                >
+                                <button
+                                    type="button"
+                                    :aria-label="`Remove plan feature ${index + 1}`"
+                                    :disabled="planDraft.features.length <= 1"
+                                    @click="removePlanFeature(index)"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                            <button
+                                type="button"
+                                class="admin-plan-add-feature"
+                                :disabled="planDraft.features.length >= 10"
+                                @click="addPlanFeature"
+                            >
+                                + ADD FEATURE
+                            </button>
+                        </fieldset>
+
+                        <p class="admin-plan-editor-hint">
+                            Leave location limit empty to allow access to all locations.
+                        </p>
+                        <button type="submit" :disabled="planSaving">
+                            {{ planSaving ? 'SAVING…' : 'SAVE CHANGES' }}
+                        </button>
+                    </form>
+                    <div v-else class="admin-plan-editor admin-plan-editor-empty">
+                        <h3>Select a plan to edit</h3>
+                        <p>Purchase percentages are based on all recorded membership purchases.</p>
+                    </div>
+                </div>
+            </section>
+
             <section v-else-if="activeSection === 'support'" class="admin-support">
                 <div class="admin-support-inbox">
                     <div class="admin-support-inbox-heading">
@@ -423,6 +578,13 @@ const usersPagination = ref({
 const selectedUser = ref(null);
 const userDetails = ref(null);
 const banUpdating = ref(false);
+const plans = ref([]);
+const totalPlanPurchases = ref(0);
+const plansLoading = ref(false);
+const plansError = ref('');
+const planSaveError = ref('');
+const planDraft = ref(null);
+const planSaving = ref(false);
 let supportRefreshTimer;
 
 const menuItems = [
@@ -641,6 +803,118 @@ function selectSection(section) {
 
     if (section === 'users' && !users.value.length) {
         loadUsers();
+    }
+    if (section === 'memberships' && !plans.value.length) {
+        loadPlans();
+    }
+}
+
+async function loadPlans() {
+    plansLoading.value = true;
+    plansError.value = '';
+
+    try {
+        const response = await fetch('/api/admin/plans', {
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin',
+        });
+
+        if (!response.ok) {
+            throw new Error('Could not load subscription plans.');
+        }
+
+        const data = await response.json();
+        plans.value = data.plans;
+        totalPlanPurchases.value = data.total_purchases;
+        if (planDraft.value) {
+            planDraft.value = plans.value.some(plan => plan.id === planDraft.value.id)
+                ? planDraft.value
+                : null;
+        }
+    } catch (loadError) {
+        plansError.value = 'Could not load plans and purchase statistics. Please try again.';
+    } finally {
+        plansLoading.value = false;
+    }
+}
+
+function editPlan(plan) {
+    planDraft.value = {
+        ...plan,
+        max_locations: plan.max_locations ?? '',
+        features: plan.features?.length
+            ? [...plan.features]
+            : [
+                '30 DAYS MEMBERSHIP',
+                '30 TOKENS',
+                plan.max_locations === null
+                    ? 'UNLIMITED LOCATIONS'
+                    : `ACCESS TO ${plan.max_locations} LOCATIONS`,
+                'GYM CHECK-IN',
+            ],
+    };
+    planSaveError.value = '';
+}
+
+function addPlanFeature() {
+    if (planDraft.value && planDraft.value.features.length < 10) {
+        planDraft.value.features.push('');
+    }
+}
+
+function removePlanFeature(index) {
+    if (planDraft.value && planDraft.value.features.length > 1) {
+        planDraft.value.features.splice(index, 1);
+    }
+}
+
+async function savePlan() {
+    if (!planDraft.value || planSaving.value) {
+        return;
+    }
+
+    planSaving.value = true;
+    planSaveError.value = '';
+
+    try {
+        const response = await fetch(`/api/admin/plans/${planDraft.value.id}`, {
+            method: 'PUT',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN':
+                    document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                name: planDraft.value.name,
+                description: planDraft.value.description || null,
+                price: planDraft.value.price,
+                max_locations: planDraft.value.max_locations === ''
+                    ? null
+                    : Number(planDraft.value.max_locations),
+                features: planDraft.value.features.map(feature => feature.trim()),
+            }),
+        });
+
+        if (!response.ok) {
+            const data = await response.json().catch(() => null);
+            throw new Error(data?.errors
+                ? Object.values(data.errors).flat().join(' ')
+                : data?.message || 'Could not save subscription plan.');
+        }
+
+        await loadPlans();
+        const savedPlan = plans.value.find(plan => plan.id === planDraft.value?.id);
+        if (savedPlan) {
+            editPlan(savedPlan);
+        }
+    } catch (saveError) {
+        planSaveError.value = saveError instanceof Error
+            ? saveError.message
+            : 'Could not save plan. Please try again.';
+    } finally {
+        planSaving.value = false;
     }
 }
 
