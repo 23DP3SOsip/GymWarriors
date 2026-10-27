@@ -6,7 +6,9 @@ const codespaceHost = process.env.CODESPACE_NAME
     ? `${process.env.CODESPACE_NAME}-5173.${process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}`
     : 'localhost';
 
-const laravelOrigin = 'https://spooky-spooky-troll-x5rqxgw4rwjrh9p9q-8000.app.github.dev';
+const laravelOrigin = process.env.CODESPACE_NAME
+    ? `https://${process.env.CODESPACE_NAME}-8000.${process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}`
+    : 'http://localhost:8000';
 
 export default defineConfig({
     plugins: [
