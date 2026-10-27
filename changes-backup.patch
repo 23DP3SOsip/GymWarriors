@@ -1,0 +1,1192 @@
+diff --git a/README.md b/README.md
+index e01aa67..5c21863 100644
+--- a/README.md
++++ b/README.md
+@@ -6,4 +6,354 @@ Google Docs:
+ https://docs.google.com/document/d/1oEPkM7nhTVBrXZoFuMKZvvzTzmru_mypJKF636SYJiE/edit?usp=sharing
+ 
+ Canva:
+-https://canva.link/1q0ip1cmtbxqaz7
+\ No newline at end of file
++https://canva.link/1q0ip1cmtbxqaz7
++
++# GymWarriors — projekta dokumentācija
++
++## 1. Par projektu
++
++**GymWarriors** ir tīmekļa lietotne sporta zāles dalības, treniņu un lietotāju pārvaldībai.
++
++Projekts izstrādāts, izmantojot Laravel un Vue.js. Lietotne apvieno lietotāja profilu, sporta zāles dalības plānus, kaloriju un treniņu funkcionalitāti, progresa pārskatus un administratora paneli.
++
++Projekta mērķis ir izveidot vienotu platformu, kurā lietotāji var pārvaldīt savu sporta zāles dalību un sekot līdzi treniņiem, savukārt administratori var pārvaldīt sistēmas datus.
++
++## 2. Izmantotās tehnoloģijas
++
++| Tehnoloģija   | Pielietojums                                                 |
++| ------------- | ------------------------------------------------------------ |
++| PHP           | Servera puses programmēšanas valoda                          |
++| Laravel       | Backend, maršrutēšana, autentifikācija un datubāzes darbības |
++| Vue.js        | Lietotāja saskarne                                           |
++| Vue Router    | Pārvietošanās starp lietotnes lapām                          |
++| Vite          | Frontend izstrādes serveris un resursu apstrāde              |
++| SQLite        | Relāciju datubāze                                            |
++| Git un GitHub | Versiju kontrole un projekta koplietošana                    |
++
++## 3. Projekta struktūra
++
++Svarīgākās projekta mapes un faili:
++
++```text
++gymwarriors/
++├── app/
++│   ├── Http/
++│   │   ├── Controllers/
++│   │   └── Middleware/
++│   └── Models/
++├── database/
++│   ├── migrations/
++│   ├── seeders/
++│   └── database.sqlite
++├── resources/
++│   └── js/
++│       ├── pages/
++│       ├── router/
++│       └── app.js
++├── routes/
++│   └── web.php
++├── tests/
++│   └── Feature/
++├── public/
++├── package.json
++├── vite.config.js
++└── README.md
++```
++
++### Galveno mapju nozīme
++
++* `app/Http/Controllers/` — kontrolieri, kas apstrādā pieprasījumus un lietotnes loģiku.
++* `app/Http/Middleware/` — starpprogrammatūra piekļuves un citu pieprasījumu noteikumu pārbaudei.
++* `app/Models/` — modeļi, kas pārstāv datubāzes objektus.
++* `database/migrations/` — datubāzes tabulu un to struktūras izmaiņu apraksti.
++* `database/seeders/` — sākotnējo datu ievietošana datubāzē.
++* `resources/js/pages/` — Vue lapu komponenti.
++* `resources/js/router/` — frontend maršrutu konfigurācija.
++* `routes/web.php` — Laravel maršruti, tostarp lietotnes API galapunkti.
++* `tests/Feature/` — funkcionalitātes un integrācijas testiem paredzētie faili.
++
++## 4. Lietotnes lapas
++
++Frontend maršrutētājā ir reģistrētas šādas lapas:
++
++| Maršruts    | Lapa         | Pielietojums                             |
++| ----------- | ------------ | ---------------------------------------- |
++| `/`         | HomePage     | Sākumlapa                                |
++| `/login`    | LoginPage    | Pieteikšanās                             |
++| `/register` | RegisterPage | Reģistrācija                             |
++| `/profile`  | ProfilePage  | Lietotāja profils un dalības informācija |
++| `/plans`    | PlansPage    | Dalības plāni un to iegāde               |
++| `/calories` | CaloriesPage | Kaloriju funkcionalitāte                 |
++| `/workout`  | WorkoutPage  | Treniņu funkcionalitāte                  |
++| `/admin`    | AdminPage    | Administratora panelis                   |
++| `/reports`  | ReportsPage  | Pārskati un statistika                   |
++
++Frontend maršruti nosaka, kura Vue komponente tiek parādīta attiecīgajā adresē. Faktiskā piekļuve aizsargātajiem datiem tiek kontrolēta arī backend pusē.
++
++## 5. Galvenā funkcionalitāte
++
++### Lietotāja konts
++
++Sistēmā ir reģistrēti lietotāji ar tādiem datiem kā vārds, uzvārds, e-pasts un tālrunis.
++
++Backend pusē ir pieejams autentificēts `/api/user` galapunkts lietotāja informācijas iegūšanai.
++
++### Sporta zāles dalības plāni
++
++Projektā ir divi sākotnēji definēti dalības plāni:
++
++* **Parastais** — 19,99 €, ar iespēju izvēlēties līdz divām sporta zāles lokācijām.
++* **Pro** — 29,99 €, ar piekļuvi visām aktīvajām lokācijām.
++
++Dalības iegādes procesā backend pārbauda izvēlēto plānu un lokācijas. Dalība tiek reģistrēta datubāzē, un tai tiek piešķirti 30 tokeni. Dalības ilgums ir 30 dienas.
++
++API galapunkti:
++
++* `GET /api/plans` — pieejamo plānu iegūšana.
++* `GET /api/locations` — aktīvo lokāciju iegūšana.
++* `POST /api/plans/purchase` — dalības iegāde.
++* `GET /api/profile` — lietotāja profila un aktīvās dalības informācija.
++
++### Treniņi
++
++Projektā ir vingrinājumu un treniņu veidņu sākotnējie dati. Piemēri:
++
++* Barbell Squat
++* Bench Press
++* Lat Pulldown
++* Romanian Deadlift
++* Push-ups
++* Plank
++* Treadmill Run
++* Cycling
++
++Ir definētas arī pilna ķermeņa spēka treniņa un kardio treniņa veidnes.
++
++### Kalorijas un progress
++
++Projektā ir kaloriju profila, ķermeņa rādītāju un progresa API galapunkti. Tie paredzēti ar kalorijām saistīto datu, ķermeņa rādītāju un lietotāja progresa apstrādei.
++
++Precīza aprēķinu loģika un visu šo funkciju lietotāja darbību secība jāskata attiecīgajos Vue komponentos un Laravel kontrolieros.
++
++### Pārskati
++
++Pārskatu lapa atrodas `resources/js/pages/ReportsPage.vue`. Tā pieprasa datus no `/api/reports`.
++
++Administratora pārskatiem ir paredzēts arī `/api/admin/reports` galapunkts.
++
++### Administratora panelis
++
++Administratora saskarne atrodas `resources/js/pages/AdminPage.vue`.
++
++Projektā ir arī atsevišķa lietotāju pārvaldības funkcionalitāte un `EnsureUserIsNotBanned` middleware. Šo komponentu precīzās atļaujas un darbības jāizvērtē kopā ar backend maršrutiem un testiem.
++
++## 6. Datubāze
++
++Projekts izmanto SQLite datubāzi:
++
++```text
++database/database.sqlite
++```
++
++Datubāzes struktūru apraksta Laravel migrācijas, bet sākotnējos datus ievieto seederi.
++
++Svarīgākie zināmie datubāzes objekti:
++
++| Tabula               | Nozīme                           |
++| -------------------- | -------------------------------- |
++| `users`              | Lietotāju konti                  |
++| `plans`              | Dalības plāni                    |
++| `locations`          | Sporta zāles lokācijas           |
++| `plan_purchases`     | Lietotāju iegādātās dalības      |
++| `purchase_locations` | Saikne starp dalību un lokācijām |
++
++Dalības tabulā `plan_purchases` tiek glabāts lietotājs, plāns, sākuma un beigu datums, piešķirto un atlikušo tokenu skaits, pirkuma datums un statuss.
++
++Papildu tabulas un to attiecības jāizpēta `database/migrations/` mapē.
++
++### Sākotnējo datu ievietošana
++
++Projektā ir pieejami seederi:
++
++* `PlanSeeder.php`
++* `LocationSeeder.php`
++* `WorkoutSeeder.php`
++
++Palaist visus `DatabaseSeeder` definētos seederus:
++
++```bash
++php artisan db:seed
++```
++
++Atsevišķu seederi var palaist šādi:
++
++```bash
++php artisan db:seed --class=PlanSeeder
++php artisan db:seed --class=LocationSeeder
++php artisan db:seed --class=WorkoutSeeder
++```
++
++**Uzmanību:** pašreizējie `PlanSeeder` un `LocationSeeder` izmanto `create()`, tāpēc atkārtota palaišana var izveidot dublikātus. Pirms seederu palaišanas esošā datubāzē pārbaudi to darbību.
++
++## 7. Projekta palaišana lokāli vai Codespaces
++
++### Prasības
++
++* PHP un projektam nepieciešamās PHP paplašinājumu versijas.
++* Composer.
++* Node.js un npm.
++* SQLite atbalsts PHP vidē.
++
++### 1. Iegūsti projektu
++
++Ja repozitorijs vēl nav pieejams:
++
++```bash
++git clone <REPOSITORY_URL>
++cd gymwarriors
++```
++
++Ja projekts jau ir atvērts GitHub Codespaces, pārej uz tā saknes mapi.
++
++### 2. Instalē backend atkarības
++
++```bash
++composer install
++```
++
++### 3. Sagatavo vides konfigurāciju
++
++Ja `.env` fails vēl nav izveidots:
++
++```bash
++cp .env.example .env
++php artisan key:generate
++```
++
++Pārliecinies, ka `.env` konfigurē SQLite un izmanto pareizo datubāzes failu.
++
++Ja nepieciešams izveidot jaunu datubāzi, vispirms noskaidro, vai projektā jau ir sagatavots `database/database.sqlite` fails un vai tajā atrodas vajadzīgie dati.
++
++### 4. Instalē frontend atkarības
++
++```bash
++npm install
++```
++
++### 5. Palaid Laravel serveri
++
++Pirmajā terminālī:
++
++```bash
++php artisan serve --host=0.0.0.0
++```
++
++### 6. Palaid Vite
++
++Otrajā terminālī:
++
++```bash
++npm run dev -- --host 0.0.0.0
++```
++
++GitHub Codespaces vidē lietotni atver caur **Ports** sadaļas 8000. porta saiti.
++
++Abiem serveriem jādarbojas, kamēr izstrādes vidē lieto lietotni.
++
++### Noderīgas komandas
++
++```bash
++php artisan route:list
++php artisan route:list --path=api
++php artisan migrate:status
++php artisan test
++npm run build
++```
++
++## 8. API maršruti
++
++Zemāk uzskaitīti projektā identificētie galapunkti. To piekļuves nosacījumi un HTTP metodes jāapstiprina ar pašreizējo `php artisan route:list --path=api` rezultātu.
++
++| Metode   | Galapunkts                     | Pielietojums                          |
++| -------- | ------------------------------ | ------------------------------------- |
++| GET      | `/api/user`                    | Lietotāja informācija                 |
++| GET      | `/api/profile`                 | Profils un dalība                     |
++| GET      | `/api/plans`                   | Dalības plāni                         |
++| GET      | `/api/locations`               | Aktīvās lokācijas                     |
++| POST     | `/api/plans/purchase`          | Dalības iegāde                        |
++| GET      | `/api/friends`                 | Draugu informācija                    |
++| POST     | `/api/friends`                 | Draudzības pieprasījums               |
++| GET      | `/api/friends/search`          | Lietotāju meklēšana                   |
++| PATCH    | `/api/friends/{friendship}`    | Draudzības pieprasījuma atjaunināšana |
++| DELETE   | `/api/friends/{friendship}`    | Draudzības saites dzēšana             |
++| GET      | `/api/progress`                | Progresa dati                         |
++| GET/POST | `/api/body-metrics`            | Ķermeņa rādītāji                      |
++| GET/POST | `/api/qr-code`                 | QR koda funkcionalitāte               |
++| GET      | `/api/reports`                 | Pārskatu dati                         |
++| GET      | `/api/admin/reports`           | Administratora pārskati               |
++| GET      | `/api/workouts`                | Treniņu vēsture                       |
++| POST     | `/api/workouts`                | Treniņa saglabāšana                   |
++| GET      | `/api/workout-templates`       | Treniņu veidnes                       |
++| GET      | `/api/calorie-profile`         | Kaloriju profila dati                 |
++| POST     | `/api/calorie-profile`         | Kaloriju profila saglabāšana          |
++| POST     | `/api/workout-recommendations` | Treniņu ieteikumi                     |
++| GET      | `/api/admin/dashboard`         | Administratora informācijas panelis   |
++
++## 9. Testēšana
++
++Projektā ir `tests/Feature/` mape. Tajā ir arī `AdminUserManagementTest.php`, kas paredzēts administratora lietotāju pārvaldības funkcionalitātes testēšanai.
++
++Testus var palaist ar:
++
++```bash
++php artisan test
++```
++
++Testu faktiskie rezultāti un testu datubāzes konfigurācija jāpārbauda izstrādes vidē.
++
++## 10. Git un GitHub
++
++Projekts tiek pārvaldīts ar Git, un galvenais izstrādes zars ir `main`.
++
++Lai apskatītu izmaiņas:
++
++```bash
++git status
++git diff
++```
++
++Lai saglabātu un augšupielādētu izmaiņas:
++
++```bash
++git add <FAILA_CELS>
++git commit -m "Describe your changes"
++git push origin main
++```
++
++Pirms izmaiņu commit pārbaudi, vai netiek iekļauti `.env` faili, paroles, piekļuves tokeni vai citi sensitīvi dati.
++
++SQLite datubāzes iekļaušana GitHub jāveic apzināti: tā var saturēt lokālos lietotāju kontus un citus datus. Komandas biedriem ir jāzina, vai jāizmanto koplietojamā datubāzes kopija vai katram sava lokālā datubāze.
++
++## 11. Ieteicamā iepazīšanās secība jaunam izstrādātājam
++
++1. Izlasīt šo `README.md`.
++2. Izpētīt `routes/web.php` un `php artisan route:list`.
++3. Izpētīt `resources/js/router/index.js`, lai saprastu frontend lapu struktūru.
++4. Atvērt attiecīgos Vue komponentus mapē `resources/js/pages/`.
++5. Izpētīt `app/Models/` un `app/Http/Controllers/`.
++6. Izlasīt `database/migrations/` un `database/seeders/`.
++7. Palaist lietotni un pārbaudīt galvenās funkcijas.
++8. Palaist testus un pārbaudīt to rezultātus.
++
++## 12. Svarīgas piezīmes
++
++Šī dokumentācija balstīta uz pašreiz identificēto projekta struktūru un apskatītajiem koda fragmentiem. Tā nav automātiski pārbaudīta visu funkciju specifikācija.
++
++Pirms projekta nodošanas citam izstrādātājam papildini šo dokumentāciju ar:
++
++* precīzām PHP, Laravel, Node.js un npm versijām;
++* autentifikācijas un administratora tiesību aprakstu;
++* pilnu datubāzes tabulu un attiecību shēmu;
++* katras funkcijas biznesa loģiku;
++* testu rezultātiem;
++* drošu testa kontu izveides instrukciju, nepublicējot paroles vai reālus lietotāju datus.
+diff --git a/gymwarriors/app/Http/Controllers/AdminLocationController.php b/gymwarriors/app/Http/Controllers/AdminLocationController.php
+deleted file mode 100644
+index 466808a..0000000
+--- a/gymwarriors/app/Http/Controllers/AdminLocationController.php
++++ /dev/null
+@@ -1,70 +0,0 @@
+-<?php
+-
+-namespace App\Http\Controllers;
+-
+-use App\Models\Location;
+-use Illuminate\Http\Request;
+-
+-class AdminLocationController extends Controller
+-{
+-    public function index()
+-    {
+-        return response()->json([
+-            'locations' => Location::query()
+-                ->select(['id', 'name', 'address', 'city', 'active'])
+-                ->withCount(['purchaseLocations', 'checkins'])
+-                ->orderBy('city')
+-                ->orderBy('name')
+-                ->get(),
+-        ]);
+-    }
+-
+-    public function store(Request $request)
+-    {
+-        $validated = $request->validate([
+-            'name' => ['required', 'string', 'max:150'],
+-            'address' => ['required', 'string', 'max:255'],
+-            'city' => ['required', 'string', 'max:100'],
+-            'active' => ['required', 'boolean'],
+-        ]);
+-
+-        $location = Location::create($validated);
+-
+-        return response()->json([
+-            'location' => $location,
+-        ], 201);
+-    }
+-
+-    public function update(Request $request, Location $location)
+-    {
+-        $validated = $request->validate([
+-            'name' => ['required', 'string', 'max:150'],
+-            'address' => ['required', 'string', 'max:255'],
+-            'city' => ['required', 'string', 'max:100'],
+-            'active' => ['required', 'boolean'],
+-        ]);
+-
+-        $location->update($validated);
+-
+-        return response()->json([
+-            'location' => $location->fresh(),
+-        ]);
+-    }
+-
+-    public function destroy(Location $location)
+-    {
+-        $location->loadCount(['purchaseLocations', 'checkins']);
+-
+-        if ($location->purchase_locations_count > 0 || $location->checkins_count > 0) {
+-            return response()->json([
+-                'message' => 'Šo lokāciju nevar dzēst, jo tā ir izmantota pirkumos vai apmeklējumos. Deaktivizē to, lai paslēptu no jaunajiem pirkumiem.',
+-            ], 409);
+-        }
+-
+-        $location->delete();
+-
+-        return response()->json([
+-            'message' => 'Lokācija veiksmīgi dzēsta.',
+-        ]);
+-    }
+-}
+diff --git a/gymwarriors/database/database.sqlite b/gymwarriors/database/database.sqlite
+index 1a4504e..f573f08 100644
+Binary files a/gymwarriors/database/database.sqlite and b/gymwarriors/database/database.sqlite differ
+diff --git a/gymwarriors/resources/css/admin.css b/gymwarriors/resources/css/admin.css
+index 5ffe0bb..b043589 100644
+--- a/gymwarriors/resources/css/admin.css
++++ b/gymwarriors/resources/css/admin.css
+@@ -1144,207 +1144,6 @@ .admin-plan-editor-empty p {
+     line-height: 1.6;
+ }
+ 
+-.admin-locations-heading {
+-    display: flex;
+-    align-items: flex-end;
+-    justify-content: space-between;
+-    gap: 18px;
+-    margin-bottom: 20px;
+-}
+-
+-.admin-locations-heading h2 {
+-    margin: 0 0 7px;
+-    color: #fff;
+-    font-size: 23px;
+-    font-weight: 900;
+-}
+-
+-.admin-locations-heading p {
+-    margin: 0;
+-    color: #888;
+-    font-size: 12px;
+-}
+-
+-.admin-location-add,
+-.admin-location-editor-actions > button:first-child {
+-    min-height: 40px;
+-    padding: 0 15px;
+-    border: 0;
+-    background: var(--admin-red);
+-    color: #fff;
+-    font-size: 9px;
+-    font-weight: 900;
+-    letter-spacing: 0.7px;
+-    cursor: pointer;
+-}
+-
+-.admin-locations-layout {
+-    display: grid;
+-    grid-template-columns: minmax(0, 1fr) minmax(270px, 0.55fr);
+-    align-items: start;
+-    gap: 18px;
+-}
+-
+-.admin-location-list {
+-    display: grid;
+-    gap: 10px;
+-}
+-
+-.admin-location-card,
+-.admin-location-editor {
+-    min-width: 0;
+-    padding: 17px;
+-    background: var(--admin-surface);
+-    border: 1px solid var(--admin-border);
+-}
+-
+-.admin-location-card {
+-    display: flex;
+-    align-items: center;
+-    justify-content: space-between;
+-    gap: 16px;
+-}
+-
+-.admin-location-card-main {
+-    min-width: 0;
+-}
+-
+-.admin-location-status {
+-    display: inline-flex;
+-    padding: 5px 7px;
+-    border: 1px solid #24543b;
+-    color: #62d991;
+-    font-size: 8px;
+-    font-weight: 900;
+-    letter-spacing: 0.7px;
+-}
+-
+-.admin-location-status.inactive {
+-    border-color: #444;
+-    color: #999;
+-}
+-
+-.admin-location-card h3,
+-.admin-location-editor h3 {
+-    margin: 9px 0 5px;
+-    color: #fff;
+-    font-size: 16px;
+-    font-weight: 900;
+-}
+-
+-.admin-location-card p {
+-    margin: 0 0 7px;
+-    color: #aaa;
+-    font-size: 12px;
+-    overflow-wrap: anywhere;
+-}
+-
+-.admin-location-card small {
+-    color: #777;
+-    font-size: 10px;
+-}
+-
+-.admin-location-card-actions {
+-    display: flex;
+-    flex-shrink: 0;
+-    gap: 7px;
+-}
+-
+-.admin-location-edit,
+-.admin-location-delete,
+-.admin-location-cancel {
+-    min-height: 34px;
+-    padding: 0 10px;
+-    border: 1px solid #383838;
+-    background: #151515;
+-    color: #eee;
+-    font-size: 9px;
+-    font-weight: 900;
+-    letter-spacing: 0.4px;
+-    cursor: pointer;
+-}
+-
+-.admin-location-delete {
+-    border-color: #57211e;
+-    color: #ff8580;
+-}
+-
+-.admin-location-delete:disabled {
+-    border-color: #333;
+-    color: #666;
+-    cursor: not-allowed;
+-}
+-
+-.admin-location-editor {
+-    position: sticky;
+-    top: 20px;
+-}
+-
+-.admin-location-editor > .admin-eyebrow {
+-    margin: 0;
+-}
+-
+-.admin-location-editor h3 {
+-    margin: 7px 0 16px;
+-}
+-
+-.admin-location-editor > label:not(.admin-location-active) {
+-    display: grid;
+-    gap: 7px;
+-    margin-top: 13px;
+-    color: #aaa;
+-    font-size: 11px;
+-    font-weight: 700;
+-}
+-
+-.admin-location-editor input:not([type="checkbox"]) {
+-    width: 100%;
+-    min-height: 39px;
+-    padding: 9px 10px;
+-    border: 1px solid #333;
+-    background: #0c0c0c;
+-    color: #fff;
+-    font: inherit;
+-    font-size: 12px;
+-}
+-
+-.admin-location-active {
+-    display: flex;
+-    align-items: center;
+-    gap: 9px;
+-    margin-top: 15px;
+-    color: #bbb;
+-    font-size: 11px;
+-    line-height: 1.5;
+-}
+-
+-.admin-location-active input {
+-    width: 16px;
+-    height: 16px;
+-    accent-color: var(--admin-red);
+-}
+-
+-.admin-location-editor-note {
+-    margin: 13px 0;
+-    color: #777;
+-    font-size: 10px;
+-    line-height: 1.5;
+-}
+-
+-.admin-location-editor-actions {
+-    display: flex;
+-    gap: 8px;
+-}
+-
+-.admin-location-editor-actions > button:first-child {
+-    flex: 1;
+-}
+-
+-.admin-location-editor-actions button:disabled {
+-    opacity: 0.5;
+-    cursor: wait;
+-}
+-
+ @media (max-width: 1000px) {
+     .admin-sidebar {
+         flex-basis: 220px;
+@@ -1376,10 +1175,6 @@ @media (max-width: 1000px) {
+     .admin-users-search input {
+         width: min(250px, 45vw);
+     }
+-
+-    .admin-locations-layout {
+-        grid-template-columns: minmax(0, 1fr) minmax(250px, 0.8fr);
+-    }
+ }
+ 
+ @media (max-width: 700px) {
+@@ -1505,24 +1300,6 @@ @media (max-width: 700px) {
+     .admin-users-search select {
+         flex: 1;
+     }
+-
+-    .admin-locations-layout {
+-        grid-template-columns: 1fr;
+-    }
+-
+-    .admin-location-editor {
+-        position: static;
+-    }
+-
+-    .admin-locations-heading {
+-        align-items: flex-start;
+-        flex-direction: column;
+-    }
+-
+-    .admin-location-card {
+-        align-items: flex-start;
+-        flex-direction: column;
+-    }
+ }
+ 
+ @media (prefers-reduced-motion: reduce) {
+diff --git a/gymwarriors/resources/js/pages/AdminPage.vue b/gymwarriors/resources/js/pages/AdminPage.vue
+index 4514c05..aa477c2 100644
+--- a/gymwarriors/resources/js/pages/AdminPage.vue
++++ b/gymwarriors/resources/js/pages/AdminPage.vue
+@@ -409,118 +409,6 @@
+                 </div>
+             </section>
+ 
+-            <section v-else-if="activeSection === 'locations'" class="admin-locations">
+-                <div class="admin-locations-heading">
+-                    <div>
+-                        <h2>Gym locations</h2>
+-                        <p>Add, update, activate or remove locations shown to members.</p>
+-                    </div>
+-                    <button
+-                        type="button"
+-                        class="admin-location-add"
+-                        @click="startNewLocation"
+-                    >
+-                        + ADD LOCATION
+-                    </button>
+-                </div>
+-
+-                <p v-if="locationsError" class="admin-error">{{ locationsError }}</p>
+-                <p v-else-if="locationsLoading" class="admin-support-empty">Loading locations…</p>
+-
+-                <div v-else class="admin-locations-layout">
+-                    <div class="admin-location-list">
+-                        <p v-if="!locations.length" class="admin-support-empty">No locations yet.</p>
+-                        <article
+-                            v-for="location in locations"
+-                            :key="location.id"
+-                            class="admin-location-card"
+-                        >
+-                            <div class="admin-location-card-main">
+-                                <span class="admin-location-status" :class="{ inactive: !location.active }">
+-                                    {{ location.active ? 'ACTIVE' : 'INACTIVE' }}
+-                                </span>
+-                                <h3>{{ location.name }}</h3>
+-                                <p>{{ location.address }}, {{ location.city }}</p>
+-                                <small>
+-                                    {{ location.purchase_locations_count }} plan assignments ·
+-                                    {{ location.checkins_count }} check-ins
+-                                </small>
+-                            </div>
+-                            <div class="admin-location-card-actions">
+-                                <button
+-                                    type="button"
+-                                    class="admin-location-edit"
+-                                    @click="editLocation(location)"
+-                                >
+-                                    EDIT
+-                                </button>
+-                                <button
+-                                    type="button"
+-                                    class="admin-location-delete"
+-                                    :disabled="location.purchase_locations_count > 0 || location.checkins_count > 0"
+-                                    :title="location.purchase_locations_count > 0 || location.checkins_count > 0
+-                                        ? 'Locations used in purchases or check-ins cannot be deleted. Deactivate them instead.'
+-                                        : 'Delete location'"
+-                                    @click="deleteLocation(location)"
+-                                >
+-                                    DELETE
+-                                </button>
+-                            </div>
+-                        </article>
+-                    </div>
+-
+-                    <form
+-                        class="admin-location-editor"
+-                        @submit.prevent="saveLocation"
+-                    >
+-                        <p class="admin-eyebrow">{{ locationDraft.id ? 'EDIT LOCATION' : 'NEW LOCATION' }}</p>
+-                        <h3>{{ locationDraft.id ? 'Update location' : 'Add a location' }}</h3>
+-                        <p v-if="locationFormError" class="admin-error">{{ locationFormError }}</p>
+-
+-                        <label>
+-                            Location name
+-                            <input v-model.trim="locationDraft.name" maxlength="150" required>
+-                        </label>
+-
+-                        <label>
+-                            Address
+-                            <input v-model.trim="locationDraft.address" maxlength="255" required>
+-                        </label>
+-
+-                        <label>
+-                            City
+-                            <input v-model.trim="locationDraft.city" maxlength="100" required>
+-                        </label>
+-
+-                        <label class="admin-location-active">
+-                            <input v-model="locationDraft.active" type="checkbox">
+-                            Active — visible for new membership purchases
+-                        </label>
+-
+-                        <p class="admin-location-editor-note">
+-                            Existing purchase and check-in history is preserved. Used locations can be deactivated but not deleted.
+-                        </p>
+-
+-                        <div class="admin-location-editor-actions">
+-                            <button type="submit" :disabled="locationSaving">
+-                                {{ locationSaving
+-                                    ? 'SAVING…'
+-                                    : locationDraft.id ? 'SAVE CHANGES' : 'CREATE LOCATION' }}
+-                            </button>
+-                            <button
+-                                v-if="locationDraft.id"
+-                                type="button"
+-                                class="admin-location-cancel"
+-                                :disabled="locationSaving"
+-                                @click="startNewLocation"
+-                            >
+-                                CANCEL
+-                            </button>
+-                        </div>
+-                    </form>
+-                </div>
+-            </section>
+-
+             <section v-else-if="activeSection === 'support'" class="admin-support">
+                 <div class="admin-support-inbox">
+                     <div class="admin-support-inbox-heading">
+@@ -697,12 +585,6 @@ const plansError = ref('');
+ const planSaveError = ref('');
+ const planDraft = ref(null);
+ const planSaving = ref(false);
+-const locations = ref([]);
+-const locationsLoading = ref(false);
+-const locationsError = ref('');
+-const locationFormError = ref('');
+-const locationSaving = ref(false);
+-const locationDraft = ref(createEmptyLocation());
+ let supportRefreshTimer;
+ 
+ const menuItems = [
+@@ -925,141 +807,6 @@ function selectSection(section) {
+     if (section === 'memberships' && !plans.value.length) {
+         loadPlans();
+     }
+-    if (section === 'locations' && !locations.value.length) {
+-        loadLocations();
+-    }
+-}
+-
+-function createEmptyLocation() {
+-    return {
+-        id: null,
+-        name: '',
+-        address: '',
+-        city: '',
+-        active: true,
+-    };
+-}
+-
+-async function loadLocations() {
+-    locationsLoading.value = true;
+-    locationsError.value = '';
+-
+-    try {
+-        const response = await fetch('/api/admin/locations', {
+-            headers: { Accept: 'application/json' },
+-            credentials: 'same-origin',
+-        });
+-
+-        if (!response.ok) {
+-            throw new Error('Could not load locations.');
+-        }
+-
+-        const data = await response.json();
+-        locations.value = data.locations;
+-        stats.value.locations = data.locations.length;
+-    } catch (loadError) {
+-        locationsError.value = 'Could not load locations. Please try again.';
+-    } finally {
+-        locationsLoading.value = false;
+-    }
+-}
+-
+-function startNewLocation() {
+-    locationDraft.value = createEmptyLocation();
+-    locationFormError.value = '';
+-}
+-
+-function editLocation(location) {
+-    locationDraft.value = { ...location };
+-    locationFormError.value = '';
+-}
+-
+-async function saveLocation() {
+-    if (locationSaving.value) {
+-        return;
+-    }
+-
+-    locationSaving.value = true;
+-    locationFormError.value = '';
+-    const isEditing = Boolean(locationDraft.value.id);
+-
+-    try {
+-        const response = await fetch(
+-            isEditing
+-                ? `/api/admin/locations/${locationDraft.value.id}`
+-                : '/api/admin/locations',
+-            {
+-                method: isEditing ? 'PUT' : 'POST',
+-                headers: {
+-                    Accept: 'application/json',
+-                    'Content-Type': 'application/json',
+-                    'X-CSRF-TOKEN':
+-                        document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+-                },
+-                credentials: 'same-origin',
+-                body: JSON.stringify({
+-                    name: locationDraft.value.name,
+-                    address: locationDraft.value.address,
+-                    city: locationDraft.value.city,
+-                    active: locationDraft.value.active,
+-                }),
+-            },
+-        );
+-
+-        if (!response.ok) {
+-            const data = await response.json().catch(() => null);
+-            throw new Error(data?.errors
+-                ? Object.values(data.errors).flat().join(' ')
+-                : data?.message || 'Could not save location.');
+-        }
+-
+-        await loadLocations();
+-        startNewLocation();
+-    } catch (saveError) {
+-        locationFormError.value = saveError instanceof Error
+-            ? saveError.message
+-            : 'Could not save location. Please try again.';
+-    } finally {
+-        locationSaving.value = false;
+-    }
+-}
+-
+-async function deleteLocation(location) {
+-    if (location.purchase_locations_count > 0 || location.checkins_count > 0) {
+-        return;
+-    }
+-
+-    if (!window.confirm(`Delete ${location.name}? This cannot be undone.`)) {
+-        return;
+-    }
+-
+-    locationsError.value = '';
+-
+-    try {
+-        const response = await fetch(`/api/admin/locations/${location.id}`, {
+-            method: 'DELETE',
+-            headers: {
+-                Accept: 'application/json',
+-                'X-CSRF-TOKEN':
+-                    document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+-            },
+-            credentials: 'same-origin',
+-        });
+-
+-        if (!response.ok) {
+-            const data = await response.json().catch(() => null);
+-            throw new Error(data?.message || 'Could not delete location.');
+-        }
+-
+-        if (locationDraft.value.id === location.id) {
+-            startNewLocation();
+-        }
+-        await loadLocations();
+-    } catch (deleteError) {
+-        locationsError.value = deleteError instanceof Error
+-            ? deleteError.message
+-            : 'Could not delete location. Please try again.';
+-    }
+ }
+ 
+ async function loadPlans() {
+diff --git a/gymwarriors/routes/web.php b/gymwarriors/routes/web.php
+index fc573ed..847c3c5 100644
+--- a/gymwarriors/routes/web.php
++++ b/gymwarriors/routes/web.php
+@@ -18,7 +18,6 @@
+ use App\Http\Controllers\SupportChatController;
+ use App\Http\Controllers\AdminUserController;
+ use App\Http\Controllers\AdminPlanController;
+-use App\Http\Controllers\AdminLocationController;
+ use App\Http\Middleware\EnsureUserIsAdmin;
+ 
+ /*
+@@ -426,10 +425,6 @@
+     Route::post('/api/support/messages', [SupportChatController::class, 'storeMessage']);
+ 
+     Route::middleware('admin')->group(function () {
+-        Route::get('/api/admin/locations', [AdminLocationController::class, 'index']);
+-        Route::post('/api/admin/locations', [AdminLocationController::class, 'store']);
+-        Route::put('/api/admin/locations/{location}', [AdminLocationController::class, 'update']);
+-        Route::delete('/api/admin/locations/{location}', [AdminLocationController::class, 'destroy']);
+         Route::get('/api/admin/plans', [AdminPlanController::class, 'index']);
+         Route::put('/api/admin/plans/{plan}', [AdminPlanController::class, 'update']);
+         Route::get('/api/admin/users', [AdminUserController::class, 'index']);
+diff --git a/gymwarriors/tests/Feature/AdminLocationManagementTest.php b/gymwarriors/tests/Feature/AdminLocationManagementTest.php
+deleted file mode 100644
+index 72cbe9e..0000000
+--- a/gymwarriors/tests/Feature/AdminLocationManagementTest.php
++++ /dev/null
+@@ -1,197 +0,0 @@
+-<?php
+-
+-namespace Tests\Feature;
+-
+-use App\Models\Location;
+-use App\Models\Plan;
+-use App\Models\PlanPurchase;
+-use App\Models\PurchaseLocation;
+-use App\Models\User;
+-use Illuminate\Foundation\Testing\RefreshDatabase;
+-use Illuminate\Support\Facades\DB;
+-use Illuminate\Support\Facades\Hash;
+-use Tests\TestCase;
+-
+-class AdminLocationManagementTest extends TestCase
+-{
+-    use RefreshDatabase;
+-
+-    public function test_admin_can_list_locations_with_usage_counts(): void
+-    {
+-        $admin = $this->createUser('admin');
+-        $location = $this->createLocation();
+-        $purchase = $this->createPurchase($this->createUser());
+-
+-        PurchaseLocation::create([
+-            'purchase_id' => $purchase->id,
+-            'location_id' => $location->id,
+-        ]);
+-        DB::table('checkins')->insert([
+-            'purchase_id' => $purchase->id,
+-            'location_id' => $location->id,
+-            'time' => now(),
+-            'token_removed' => false,
+-        ]);
+-
+-        $this->actingAs($admin)
+-            ->getJson('/api/admin/locations')
+-            ->assertOk()
+-            ->assertJsonPath('locations.0.name', $location->name)
+-            ->assertJsonPath('locations.0.purchase_locations_count', 1)
+-            ->assertJsonPath('locations.0.checkins_count', 1);
+-    }
+-
+-    public function test_admin_can_create_and_update_locations(): void
+-    {
+-        $admin = $this->createUser('admin');
+-
+-        $response = $this->actingAs($admin)
+-            ->postJson('/api/admin/locations', [
+-                'name' => 'Central Gym',
+-                'address' => 'Main Street 1',
+-                'city' => 'Riga',
+-                'active' => true,
+-            ])
+-            ->assertCreated()
+-            ->assertJsonPath('location.name', 'Central Gym')
+-            ->assertJsonPath('location.active', true);
+-
+-        $locationId = $response->json('location.id');
+-
+-        $this->putJson("/api/admin/locations/{$locationId}", [
+-            'name' => 'Central Gym Updated',
+-            'address' => 'Main Street 2',
+-            'city' => 'Jurmala',
+-            'active' => false,
+-        ])
+-            ->assertOk()
+-            ->assertJsonPath('location.name', 'Central Gym Updated')
+-            ->assertJsonPath('location.address', 'Main Street 2')
+-            ->assertJsonPath('location.city', 'Jurmala')
+-            ->assertJsonPath('location.active', false);
+-
+-        $this->assertDatabaseHas('locations', [
+-            'id' => $locationId,
+-            'name' => 'Central Gym Updated',
+-            'active' => false,
+-        ]);
+-    }
+-
+-    public function test_admin_can_delete_unused_location(): void
+-    {
+-        $admin = $this->createUser('admin');
+-        $location = $this->createLocation();
+-
+-        $this->actingAs($admin)
+-            ->deleteJson("/api/admin/locations/{$location->id}")
+-            ->assertOk()
+-            ->assertJsonPath('message', 'Lokācija veiksmīgi dzēsta.');
+-
+-        $this->assertDatabaseMissing('locations', ['id' => $location->id]);
+-    }
+-
+-    public function test_admin_cannot_delete_location_used_in_purchase_or_checkin(): void
+-    {
+-        $admin = $this->createUser('admin');
+-        $location = $this->createLocation();
+-        $purchase = $this->createPurchase($this->createUser());
+-
+-        PurchaseLocation::create([
+-            'purchase_id' => $purchase->id,
+-            'location_id' => $location->id,
+-        ]);
+-
+-        $this->actingAs($admin)
+-            ->deleteJson("/api/admin/locations/{$location->id}")
+-            ->assertStatus(409)
+-            ->assertJsonPath(
+-                'message',
+-                'Šo lokāciju nevar dzēst, jo tā ir izmantota pirkumos vai apmeklējumos. Deaktivizē to, lai paslēptu no jaunajiem pirkumiem.'
+-            );
+-
+-        $this->assertDatabaseHas('locations', ['id' => $location->id]);
+-    }
+-
+-    public function test_only_admins_can_manage_locations(): void
+-    {
+-        $user = $this->createUser();
+-        $location = $this->createLocation();
+-
+-        $this->getJson('/api/admin/locations')->assertUnauthorized();
+-
+-        $this->actingAs($user)
+-            ->getJson('/api/admin/locations')
+-            ->assertForbidden();
+-
+-        $this->actingAs($user)
+-            ->postJson('/api/admin/locations', [
+-                'name' => 'Central Gym',
+-                'address' => 'Main Street 1',
+-                'city' => 'Riga',
+-                'active' => true,
+-            ])
+-            ->assertForbidden();
+-
+-        $this->actingAs($user)
+-            ->deleteJson("/api/admin/locations/{$location->id}")
+-            ->assertForbidden();
+-    }
+-
+-    public function test_location_data_is_validated(): void
+-    {
+-        $admin = $this->createUser('admin');
+-
+-        $this->actingAs($admin)
+-            ->postJson('/api/admin/locations', [
+-                'name' => '',
+-                'address' => str_repeat('x', 256),
+-                'city' => '',
+-                'active' => 'not-a-boolean',
+-            ])
+-            ->assertUnprocessable()
+-            ->assertJsonValidationErrors(['name', 'address', 'city', 'active']);
+-    }
+-
+-    private function createUser(string $role = 'user'): User
+-    {
+-        $user = User::create([
+-            'first_name' => fake()->firstName(),
+-            'last_name' => fake()->lastName(),
+-            'email' => fake()->unique()->safeEmail(),
+-            'password' => Hash::make('Password123!'),
+-        ]);
+-        $user->forceFill(['role' => $role])->save();
+-
+-        return $user;
+-    }
+-
+-    private function createLocation(): Location
+-    {
+-        return Location::create([
+-            'name' => 'Central Gym',
+-            'address' => 'Main Street 1',
+-            'city' => 'Riga',
+-            'active' => true,
+-        ]);
+-    }
+-
+-    private function createPurchase(User $user): PlanPurchase
+-    {
+-        $plan = Plan::create([
+-            'name' => 'Standard',
+-            'price' => 19.99,
+-            'max_locations' => 2,
+-        ]);
+-
+-        return PlanPurchase::create([
+-            'user_id' => $user->id,
+-            'plan_id' => $plan->id,
+-            'start_date' => now()->toDateString(),
+-            'end_date' => now()->addDays(29)->toDateString(),
+-            'allocated_tokens' => 30,
+-            'remaining_tokens' => 30,
+-            'purchase_date' => now(),
+-            'status' => 'active',
+-        ]);
+-    }
+-}
