@@ -96,27 +96,72 @@
             </section>
 
             <section class="profile-section">
-                <div class="section-title">
-                    <span>01</span>
-                    PERSONAL INFORMATION
+                <div class="profile-section-heading">
+                    <div class="section-title">
+                        <span>01</span>
+                        PERSONAL INFORMATION
+                    </div>
+                    <button
+                        v-if="!isEditingProfile"
+                        type="button"
+                        class="membership-button profile-edit-button"
+                        @click="startEditingProfile"
+                    >
+                        EDIT INFORMATION
+                    </button>
                 </div>
 
-                <div class="profile-grid">
+                <form v-if="isEditingProfile" class="profile-edit-form" @submit.prevent="saveProfile">
+                    <div class="profile-grid">
+                        <div class="profile-field">
+                            <label for="profile-first-name">FIRST NAME</label>
+                            <input id="profile-first-name" v-model.trim="profileForm.first_name" type="text" maxlength="100" required />
+                            <p v-if="profileErrors.first_name" class="profile-field-error">{{ profileErrors.first_name }}</p>
+                        </div>
+
+                        <div class="profile-field">
+                            <label for="profile-last-name">LAST NAME</label>
+                            <input id="profile-last-name" v-model.trim="profileForm.last_name" type="text" maxlength="100" required />
+                            <p v-if="profileErrors.last_name" class="profile-field-error">{{ profileErrors.last_name }}</p>
+                        </div>
+
+                        <div class="profile-field">
+                            <label for="profile-email">EMAIL</label>
+                            <input id="profile-email" v-model.trim="profileForm.email" type="email" maxlength="255" required />
+                            <p v-if="profileErrors.email" class="profile-field-error">{{ profileErrors.email }}</p>
+                        </div>
+
+                        <div class="profile-field">
+                            <label for="profile-phone">PHONE</label>
+                            <input id="profile-phone" v-model.trim="profileForm.phone" type="tel" maxlength="15" />
+                            <p v-if="profileErrors.phone" class="profile-field-error">{{ profileErrors.phone }}</p>
+                        </div>
+                    </div>
+                    <p v-if="profileSaveError" class="profile-save-message error">{{ profileSaveError }}</p>
+                    <div class="profile-edit-actions">
+                        <button type="submit" class="membership-button" :disabled="savingProfile">
+                            {{ savingProfile ? 'SAVING...' : 'SAVE CHANGES' }}
+                        </button>
+                        <button type="button" class="profile-cancel-button" :disabled="savingProfile" @click="cancelEditingProfile">
+                            CANCEL
+                        </button>
+                    </div>
+                </form>
+                <p v-if="profileSaveMessage" class="profile-save-message success">{{ profileSaveMessage }}</p>
+
+                <div v-if="!isEditingProfile" class="profile-grid">
                     <div class="profile-field">
                         <label>FIRST NAME</label>
                         <p>{{ user.first_name }}</p>
                     </div>
-
                     <div class="profile-field">
                         <label>LAST NAME</label>
                         <p>{{ user.last_name }}</p>
                     </div>
-
                     <div class="profile-field">
                         <label>EMAIL</label>
                         <p>{{ user.email }}</p>
                     </div>
-
                     <div class="profile-field">
                         <label>PHONE</label>
                         <p>{{ user.phone || 'Not provided' }}</p>
@@ -466,6 +511,17 @@ const user = reactive({
     email: '',
     phone: null,
 });
+const profileForm = reactive({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+});
+const profileErrors = reactive({});
+const isEditingProfile = ref(false);
+const savingProfile = ref(false);
+const profileSaveError = ref('');
+const profileSaveMessage = ref('');
 
 const membership = ref(null);
 const loadingMembership = ref(true);
@@ -548,6 +604,12 @@ const loadProfile = async () => {
         user.last_name = data.user.last_name;
         user.email = data.user.email;
         user.phone = data.user.phone;
+        Object.assign(profileForm, {
+            first_name: data.user.first_name,
+            last_name: data.user.last_name,
+            email: data.user.email,
+            phone: data.user.phone || '',
+        });
 
         membership.value = data.membership;
 
@@ -558,6 +620,79 @@ const loadProfile = async () => {
         console.error('PROFILE ERROR:', error);
     } finally {
         loadingMembership.value = false;
+    }
+};
+
+const startEditingProfile = () => {
+    Object.assign(profileForm, {
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        phone: user.phone || '',
+    });
+    Object.keys(profileErrors).forEach((key) => delete profileErrors[key]);
+    profileSaveError.value = '';
+    profileSaveMessage.value = '';
+    isEditingProfile.value = true;
+};
+
+const cancelEditingProfile = () => {
+    isEditingProfile.value = false;
+    profileSaveError.value = '';
+    Object.keys(profileErrors).forEach((key) => delete profileErrors[key]);
+};
+
+const saveProfile = async () => {
+    savingProfile.value = true;
+    profileSaveError.value = '';
+    profileSaveMessage.value = '';
+    Object.keys(profileErrors).forEach((key) => delete profileErrors[key]);
+
+    try {
+        const response = await fetch('/api/profile', {
+            method: 'PUT',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'X-XSRF-TOKEN': csrfToken(),
+            },
+            body: JSON.stringify({
+                ...profileForm,
+                phone: profileForm.phone || null,
+            }),
+        });
+
+        if (response.status === 401) {
+            router.push('/login');
+            return;
+        }
+
+        const data = await response.json();
+        if (response.status === 422 && data.errors) {
+            Object.entries(data.errors).forEach(([field, messages]) => {
+                profileErrors[field] = messages[0];
+            });
+            profileSaveError.value = 'Please correct the highlighted fields.';
+            return;
+        }
+        if (!response.ok) {
+            throw new Error(data.message || 'Could not update your profile.');
+        }
+
+        Object.assign(user, data.user);
+        Object.assign(profileForm, {
+            first_name: data.user.first_name,
+            last_name: data.user.last_name,
+            email: data.user.email,
+            phone: data.user.phone || '',
+        });
+        profileSaveMessage.value = data.message;
+        isEditingProfile.value = false;
+    } catch (error) {
+        profileSaveError.value = error.message || 'Could not update your profile.';
+        console.error('PROFILE UPDATE ERROR:', error);
+    } finally {
+        savingProfile.value = false;
     }
 };
 

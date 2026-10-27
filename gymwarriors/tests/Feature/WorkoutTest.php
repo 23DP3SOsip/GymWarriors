@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Exercise;
 use App\Models\User;
 use App\Models\WorkoutTemplate;
+use App\Support\PopularExerciseCatalog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -41,6 +42,84 @@ class WorkoutTest extends TestCase
             ->getJson('/api/workout-templates')
             ->assertOk()
             ->assertJsonPath('workouts.0.exercises.0.name', 'Test Squat');
+    }
+
+    public function test_exercise_picker_returns_one_hundred_popular_exercises(): void
+    {
+        $this->seed(\Database\Seeders\WorkoutSeeder::class);
+
+        $this->actingAs($this->createUser('exercise-picker@example.com'))
+            ->getJson('/api/exercises')
+            ->assertOk()
+            ->assertJsonCount(100, 'exercises')
+            ->assertJsonFragment(['name' => 'Barbell Squat'])
+            ->assertJsonFragment(['name' => 'Treadmill Run']);
+
+        $this->assertCount(100, PopularExerciseCatalog::exercises());
+    }
+
+    public function test_user_can_create_a_private_workout_template(): void
+    {
+        $user = $this->createUser('custom-template@example.com');
+        $otherUser = $this->createUser('other-template@example.com');
+        $exercise = Exercise::create([
+            'name' => 'Custom Bench Press',
+            'category' => 'strength',
+            'muscle_group' => 'chest',
+        ]);
+
+        $this->actingAs($user)
+            ->postJson('/api/workout-templates', [
+                'name' => 'My Chest Day',
+                'type' => 'strength',
+                'description' => 'Personal workout',
+                'exercises' => [[
+                    'exercise_id' => $exercise->id,
+                    'sets' => 4,
+                    'reps' => 10,
+                    'rest_seconds' => 90,
+                ]],
+            ])
+            ->assertCreated()
+            ->assertJsonPath('workout.name', 'My Chest Day')
+            ->assertJsonPath('workout.user_id', $user->id)
+            ->assertJsonPath('workout.exercises.0.pivot.sets', 4);
+
+        $this->actingAs($otherUser)
+            ->getJson('/api/workout-templates')
+            ->assertOk()
+            ->assertJsonMissing(['name' => 'My Chest Day']);
+    }
+
+    public function test_user_cannot_log_another_users_private_workout_template(): void
+    {
+        $user = $this->createUser('workout-owner@example.com');
+        $otherUser = $this->createUser('workout-visitor@example.com');
+        $exercise = Exercise::create([
+            'name' => 'Private Workout Exercise',
+            'category' => 'strength',
+            'muscle_group' => 'chest',
+        ]);
+        $template = WorkoutTemplate::create([
+            'user_id' => $user->id,
+            'name' => 'Private Workout',
+            'type' => 'strength',
+        ]);
+        $template->exercises()->attach($exercise, ['sets' => 3, 'reps' => 8]);
+
+        $this->actingAs($otherUser)
+            ->postJson('/api/workouts', [
+                'workout_template_id' => $template->id,
+                'name' => $template->name,
+                'type' => $template->type,
+                'started_at' => '2026-10-20 18:00:00',
+                'exercises' => [[
+                    'exercise_id' => $exercise->id,
+                    'sets_completed' => 3,
+                    'reps_completed' => 8,
+                ]],
+            ])
+            ->assertForbidden();
     }
 
     public function test_workout_is_saved_for_the_authenticated_user_with_exercises(): void

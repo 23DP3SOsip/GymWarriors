@@ -16,9 +16,11 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\FriendController;
 use App\Http\Controllers\ProgressController;
 use App\Http\Controllers\SupportChatController;
+use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminPlanController;
 use App\Http\Controllers\AdminLocationController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Middleware\EnsureUserIsAdmin;
 
 /*
@@ -398,6 +400,8 @@ Route::middleware('auth')->get('/api/profile', function (Request $request) {
 
 
 Route::middleware('auth')->group(function () {
+    Route::put('/api/profile', [ProfileController::class, 'update']);
+    Route::get('/api/leaderboard', [LeaderboardController::class, 'index']);
     Route::get('/api/qr-code', [QrCodeController::class, 'show']);
     Route::post('/api/qr-code', [QrCodeController::class, 'store']);
 
@@ -408,6 +412,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/calorie-profile', [CalorieProfileController::class, 'store']);
     Route::post('/api/workout-recommendations', [CalorieProfileController::class, 'workoutRecommendation']);
     Route::get('/api/workout-templates', [WorkoutController::class, 'templates']);
+    Route::get('/api/exercises', [WorkoutController::class, 'exercises']);
+    Route::post('/api/workout-templates', [WorkoutController::class, 'storeTemplate']);
     Route::get('/api/workouts', [WorkoutController::class, 'history']);
     Route::post('/api/workouts', [WorkoutController::class, 'store']);
     Route::get('/api/reports', [ReportController::class, 'index']);

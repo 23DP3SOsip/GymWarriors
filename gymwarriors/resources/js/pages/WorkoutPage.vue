@@ -65,9 +65,64 @@
             </section>
 
             <section class="profile-section">
-                <div class="section-title"><span>03</span> WORKOUT LIBRARY</div>
+                <div class="workout-library-heading">
+                    <div class="section-title"><span>03</span> WORKOUT LIBRARY</div>
+                    <button type="button" class="membership-button" @click="isCreateWorkoutOpen = !isCreateWorkoutOpen">
+                        {{ isCreateWorkoutOpen ? 'CANCEL' : 'ADD YOUR WORKOUT' }}
+                    </button>
+                </div>
+                <form v-if="isCreateWorkoutOpen" class="calorie-form custom-workout-form" @submit.prevent="createWorkoutTemplate">
+                    <h2 class="calorie-wide">CREATE YOUR WORKOUT</h2>
+                    <label>WORKOUT NAME
+                        <input v-model.trim="customWorkout.name" type="text" maxlength="100" required />
+                    </label>
+                    <label>WORKOUT TYPE
+                        <select v-model="customWorkout.type" required>
+                            <option v-for="type in workoutTypes" :key="type.value" :value="type.value">{{ type.label }}</option>
+                        </select>
+                    </label>
+                    <label class="calorie-wide">DESCRIPTION
+                        <input v-model.trim="customWorkout.description" type="text" maxlength="2000" />
+                    </label>
+                    <div class="custom-workout-exercises calorie-wide">
+                        <div v-for="(exercise, index) in customWorkout.exercises" :key="index" class="custom-workout-exercise">
+                            <label>EXERCISE
+                                <select v-model.number="exercise.exercise_id" required>
+                                    <option :value="null" disabled>Choose an exercise</option>
+                                    <option v-for="item in availableExercises" :key="item.id" :value="item.id">
+                                        {{ item.name }} — {{ item.muscle_group }}
+                                    </option>
+                                </select>
+                            </label>
+                            <label>SETS
+                                <input v-model.number="exercise.sets" type="number" min="1" max="100" required />
+                            </label>
+                            <label>REPS
+                                <input v-model.number="exercise.reps" type="number" min="1" max="1000" />
+                            </label>
+                            <label>DURATION (SEC)
+                                <input v-model.number="exercise.duration_seconds" type="number" min="1" max="86400" />
+                            </label>
+                            <label>REST (SEC)
+                                <input v-model.number="exercise.rest_seconds" type="number" min="0" max="3600" required />
+                            </label>
+                            <button v-if="customWorkout.exercises.length > 1" type="button" class="custom-workout-remove" @click="removeWorkoutExercise(index)" aria-label="Remove exercise">
+                                REMOVE
+                            </button>
+                        </div>
+                        <button type="button" class="custom-workout-add-exercise" @click="addWorkoutExercise">
+                            + ADD EXERCISE
+                        </button>
+                    </div>
+                    <p v-if="customWorkoutError" class="calorie-message error">{{ customWorkoutError }}</p>
+                    <button type="submit" class="membership-button calorie-submit" :disabled="creatingTemplate || !availableExercises.length">
+                        {{ creatingTemplate ? 'SAVING...' : 'SAVE TO MY LIBRARY' }}
+                    </button>
+                </form>
+                <p v-if="customWorkoutMessage" class="calorie-message success custom-workout-success">{{ customWorkoutMessage }}</p>
                 <div class="workout-library">
                     <article v-for="template in templates" :key="template.id" class="workout-card">
+                        <span v-if="template.user_id" class="workout-owner-label">MY WORKOUT</span>
                         <h2>{{ template.name }}</h2>
                         <p>{{ template.description }}</p>
                         <ul>
@@ -120,11 +175,22 @@ const loading = ref(false);
 const errorMessage = ref('');
 const recommendation = ref(null);
 const templates = ref([]);
+const availableExercises = ref([]);
 const history = ref([]);
 const selectedTemplate = ref(null);
 const workoutNotes = ref('');
 const savingWorkout = ref(false);
 const workoutMessage = ref('');
+const isCreateWorkoutOpen = ref(false);
+const creatingTemplate = ref(false);
+const customWorkoutError = ref('');
+const customWorkoutMessage = ref('');
+const customWorkout = reactive({
+    name: '',
+    type: 'strength',
+    description: '',
+    exercises: [{ exercise_id: null, sets: 3, reps: 8, duration_seconds: null, rest_seconds: 90 }],
+});
 const workoutType = ref('strength');
 const activityLevels = [
     { value: 'sedentary', label: 'Sedentary — little or no exercise' },
@@ -192,13 +258,56 @@ const loadRecommendation = async () => {
 };
 
 const loadWorkoutData = async () => {
-    const [templatesResponse, historyResponse] = await Promise.all([
+    const [templatesResponse, historyResponse, exercisesResponse] = await Promise.all([
         fetch('/api/workout-templates', { headers: { Accept: 'application/json' } }),
         fetch('/api/workouts', { headers: { Accept: 'application/json' } }),
+        fetch('/api/exercises', { headers: { Accept: 'application/json' } }),
     ]);
 
     if (templatesResponse.ok) templates.value = (await templatesResponse.json()).workouts;
     if (historyResponse.ok) history.value = (await historyResponse.json()).workouts;
+    if (exercisesResponse.ok) availableExercises.value = (await exercisesResponse.json()).exercises;
+};
+
+const addWorkoutExercise = () => {
+    customWorkout.exercises.push({ exercise_id: null, sets: 3, reps: 8, duration_seconds: null, rest_seconds: 90 });
+};
+
+const removeWorkoutExercise = (index) => {
+    customWorkout.exercises.splice(index, 1);
+};
+
+const createWorkoutTemplate = async () => {
+    creatingTemplate.value = true;
+    customWorkoutError.value = '';
+    customWorkoutMessage.value = '';
+    try {
+        const response = await fetch('/api/workout-templates', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-XSRF-TOKEN': csrfToken() },
+            body: JSON.stringify(customWorkout),
+        });
+        if (response.status === 401) {
+            router.push('/login');
+            return;
+        }
+        const data = await response.json();
+        if (!response.ok) {
+            customWorkoutError.value = data.message || 'Could not save your workout.';
+            return;
+        }
+        templates.value.push(data.workout);
+        customWorkoutMessage.value = 'Workout added to your library.';
+        customWorkout.name = '';
+        customWorkout.description = '';
+        customWorkout.exercises = [{ exercise_id: null, sets: 3, reps: 8, duration_seconds: null, rest_seconds: 90 }];
+        isCreateWorkoutOpen.value = false;
+    } catch (error) {
+        customWorkoutError.value = 'Could not save your workout.';
+        console.error('CUSTOM WORKOUT CREATE ERROR:', error);
+    } finally {
+        creatingTemplate.value = false;
+    }
 };
 
 const selectTemplate = (template) => {

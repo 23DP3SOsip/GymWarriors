@@ -59,6 +59,14 @@
                     </router-link>
 
 
+                    <router-link
+                        v-if="isLoggedIn"
+                        to="/support"
+                        class="login-btn"
+                    >
+                        SUPPORT
+                    </router-link>
+
                     <!-- LOGGED IN -->
                     <router-link
                         v-if="isLoggedIn"
@@ -66,14 +74,6 @@
                         class="start-btn"
                     >
                         MEMBERSHIP
-                    </router-link>
-
-                    <router-link
-                        v-if="isLoggedIn"
-                        to="/support"
-                        class="login-btn"
-                    >
-                        SUPPORT
                     </router-link>
 
                     <!-- NOT LOGGED IN -->
@@ -302,6 +302,35 @@
 
             </div>
 
+        </section>
+
+        <section v-if="isLoggedIn" class="leaderboard-section" aria-labelledby="leaderboard-title">
+            <div class="leaderboard-heading">
+                <p class="hero-small">GYM WARRIORS RANKING</p>
+                <h2 id="leaderboard-title">CLIMB THE <span>RANKS</span></h2>
+            </div>
+
+            <p v-if="leaderboardLoading" class="leaderboard-message">Loading rankings...</p>
+            <p v-else-if="leaderboardError" class="leaderboard-message leaderboard-error">{{ leaderboardError }}</p>
+            <div v-else-if="leaderboard" class="leaderboard-content">
+                <article class="leaderboard-user-rank">
+                    <span class="leaderboard-label">YOUR RANK</span>
+                    <strong>#{{ leaderboard.rank }}</strong>
+                    <span>OF {{ leaderboard.total_users }} WARRIORS</span>
+                    <p>{{ leaderboard.workouts_count }} {{ leaderboard.workouts_count === 1 ? 'WORKOUT' : 'WORKOUTS' }} COMPLETED</p>
+                </article>
+
+                <div class="leaderboard-top">
+                    <h3>TOP 3 WARRIORS</h3>
+                    <ol>
+                        <li v-for="warrior in leaderboard.top_users" :key="warrior.rank">
+                            <span class="leaderboard-place">#{{ warrior.rank }}</span>
+                            <span class="leaderboard-name">{{ warrior.first_name }} {{ warrior.last_name }}</span>
+                            <strong>{{ warrior.workouts_count }} {{ warrior.workouts_count === 1 ? 'WORKOUT' : 'WORKOUTS' }}</strong>
+                        </li>
+                    </ol>
+                </div>
+            </div>
         </section>
 
 
@@ -796,6 +825,9 @@ import {
 // =====================================================
 
 const isLoggedIn = ref(false);
+const leaderboard = ref(null);
+const leaderboardLoading = ref(false);
+const leaderboardError = ref('');
 
 
 // =====================================================
@@ -829,12 +861,39 @@ const checkAuthentication = async () => {
         }
 
         isLoggedIn.value = true;
+        await loadLeaderboard();
     } catch (error) {
         isLoggedIn.value = false;
         console.error(
             'Neizdevās izveidot savienojumu ar autentifikācijas API.',
             error
         );
+    }
+};
+
+const loadLeaderboard = async () => {
+    leaderboardLoading.value = true;
+    leaderboardError.value = '';
+    try {
+        const response = await fetch('/api/leaderboard', {
+            headers: { Accept: 'application/json' },
+        });
+
+        if (response.status === 401) {
+            isLoggedIn.value = false;
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error('Could not load the leaderboard.');
+        }
+
+        leaderboard.value = await response.json();
+    } catch (error) {
+        leaderboardError.value = error.message || 'Could not load the leaderboard.';
+        console.error('LEADERBOARD ERROR:', error);
+    } finally {
+        leaderboardLoading.value = false;
     }
 };
 

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class WorkoutTemplate extends Model
 {
-    protected $fillable = ['name', 'type', 'description'];
+    protected $fillable = ['user_id', 'name', 'type', 'description'];
 
     public function exercises(): BelongsToMany
     {
