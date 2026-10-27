@@ -68,6 +68,14 @@
                         MEMBERSHIP
                     </router-link>
 
+                    <router-link
+                        v-if="isLoggedIn"
+                        to="/support"
+                        class="login-btn"
+                    >
+                        SUPPORT
+                    </router-link>
+
                     <!-- NOT LOGGED IN -->
                     <router-link
                         v-if="!isLoggedIn"
@@ -154,6 +162,14 @@
                     @click="isMenuOpen = false"
                 >
                     MEMBERSHIP
+                </router-link>
+
+                <router-link
+                    v-if="isLoggedIn"
+                    to="/support"
+                    @click="isMenuOpen = false"
+                >
+                    SUPPORT CHAT
                 </router-link>
 
 
@@ -745,6 +761,13 @@
                     to="/profile"
                 >
                     PROFILE
+                </router-link>
+
+                <router-link
+                    v-if="isLoggedIn"
+                    to="/support"
+                >
+                    SUPPORT CHAT
                 </router-link>
 
             </div>

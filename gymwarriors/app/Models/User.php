@@ -62,4 +62,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Friendship::class, 'addressee_id');
     }
+
+    public function supportConversations()
+    {
+        return $this->hasMany(SupportConversation::class);
+    }
 }

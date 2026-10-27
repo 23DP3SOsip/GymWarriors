@@ -15,6 +15,7 @@ use App\Http\Controllers\WorkoutController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\FriendController;
 use App\Http\Controllers\ProgressController;
+use App\Http\Controllers\SupportChatController;
 use App\Http\Middleware\EnsureUserIsAdmin;
 
 /*
@@ -414,6 +415,19 @@ Route::middleware('auth')->group(function () {
     Route::patch('/api/friends/{friendship}', [FriendController::class, 'update']);
     Route::delete('/api/friends/{friendship}', [FriendController::class, 'destroy']);
     Route::get('/api/progress', [ProgressController::class, 'index']);
+    Route::get('/api/support/conversations', [SupportChatController::class, 'userConversations']);
+    Route::post('/api/support/conversations', [SupportChatController::class, 'startConversation']);
+    Route::get('/api/support/conversations/{conversation}/messages', [SupportChatController::class, 'userConversationMessages']);
+    Route::post('/api/support/conversations/{conversation}/messages', [SupportChatController::class, 'storeUserConversationMessage']);
+    Route::get('/api/support/messages', [SupportChatController::class, 'messages']);
+    Route::post('/api/support/messages', [SupportChatController::class, 'storeMessage']);
+
+    Route::middleware('admin')->group(function () {
+        Route::get('/api/admin/support-conversations', [SupportChatController::class, 'conversations']);
+        Route::get('/api/admin/support-conversations/{conversation}/messages', [SupportChatController::class, 'adminMessages']);
+        Route::post('/api/admin/support-conversations/{conversation}/messages', [SupportChatController::class, 'reply']);
+        Route::post('/api/admin/support-conversations/{conversation}/close', [SupportChatController::class, 'close']);
+    });
 });
 
 Route::middleware(['auth', 'admin'])->get('/api/admin/dashboard', function () {

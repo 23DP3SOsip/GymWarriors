@@ -13,6 +13,7 @@
                 <router-link to="/calories">CALORIE TRACKING</router-link>
                 <router-link to="/workout">WORKOUTS AND NUTRITION</router-link>
                 <router-link to="/reports">REPORTS</router-link>
+                <router-link to="/support">SUPPORT</router-link>
             </nav>
                 
 <button
@@ -64,6 +65,9 @@
     </router-link>
     <router-link to="/reports" @click="isMenuOpen = false">
         REPORTS
+    </router-link>
+    <router-link to="/support" @click="isMenuOpen = false">
+        SUPPORT CHAT
     </router-link>
 
     <button type="button" @click="logout">
