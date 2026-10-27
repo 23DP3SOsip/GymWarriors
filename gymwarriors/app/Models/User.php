@@ -25,6 +25,8 @@ class User extends Authenticatable
         return [
             'password' => 'hashed',
             'role' => 'string',
+            'is_banned' => 'boolean',
+            'banned_at' => 'datetime',
         ];
     }
 

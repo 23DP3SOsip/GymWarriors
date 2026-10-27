@@ -16,6 +16,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\FriendController;
 use App\Http\Controllers\ProgressController;
 use App\Http\Controllers\SupportChatController;
+use App\Http\Controllers\AdminUserController;
 use App\Http\Middleware\EnsureUserIsAdmin;
 
 /*
@@ -423,6 +424,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/support/messages', [SupportChatController::class, 'storeMessage']);
 
     Route::middleware('admin')->group(function () {
+        Route::get('/api/admin/users', [AdminUserController::class, 'index']);
+        Route::get('/api/admin/users/{user}', [AdminUserController::class, 'show']);
+        Route::patch('/api/admin/users/{user}/ban', [AdminUserController::class, 'updateBan']);
         Route::get('/api/admin/support-conversations', [SupportChatController::class, 'conversations']);
         Route::get('/api/admin/support-conversations/{conversation}/messages', [SupportChatController::class, 'adminMessages']);
         Route::post('/api/admin/support-conversations/{conversation}/messages', [SupportChatController::class, 'reply']);

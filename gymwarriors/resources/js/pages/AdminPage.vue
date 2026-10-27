@@ -11,7 +11,7 @@
                     v-for="item in menuItems"
                     :key="item.id"
                     :class="{ active: activeSection === item.id }"
-                    @click="activeSection = item.id"
+                    @click="selectSection(item.id)"
                 >
                     {{ item.label }}
                     <span
@@ -71,6 +71,186 @@
                         <strong>{{ stats.locations ?? '—' }}</strong>
                         <p>Gym locations</p>
                     </article>
+                </div>
+            </section>
+
+            <section v-else-if="activeSection === 'users'" class="admin-users">
+                <div class="admin-users-toolbar">
+                    <div>
+                        <h2>User management</h2>
+                        <p>View account details and manage account access.</p>
+                    </div>
+                    <form class="admin-users-search" @submit.prevent="loadUsers(1)">
+                        <input
+                            v-model="userSearch"
+                            type="search"
+                            placeholder="Search name, email or phone"
+                            aria-label="Search users"
+                        >
+                        <select v-model="userStatus" aria-label="Filter users by status">
+                            <option value="all">All accounts</option>
+                            <option value="active">Active</option>
+                            <option value="banned">Banned</option>
+                        </select>
+                        <button type="submit" :disabled="usersLoading">SEARCH</button>
+                    </form>
+                </div>
+
+                <p v-if="usersError" class="admin-error">{{ usersError }}</p>
+                <div class="admin-users-layout">
+                    <div class="admin-users-list">
+                        <p v-if="usersLoading" class="admin-support-empty">Loading users…</p>
+                        <p v-else-if="!users.length" class="admin-support-empty">No users found.</p>
+                        <div v-else class="admin-users-table-wrap">
+                            <table class="admin-users-table">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Activity</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="user in users" :key="user.id">
+                                        <td>
+                                            <strong>{{ user.first_name }} {{ user.last_name }}</strong>
+                                            <span>{{ user.email }}</span>
+                                            <span>{{ user.phone || 'No phone number' }}</span>
+                                        </td>
+                                        <td>{{ user.role }}</td>
+                                        <td>
+                                            <span class="admin-user-status" :class="{ banned: user.is_banned }">
+                                                {{ user.is_banned ? 'BANNED' : 'ACTIVE' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {{ user.plan_purchases_count }} plans ·
+                                            {{ user.workouts_count }} workouts ·
+                                            {{ user.body_metrics_count }} metrics
+                                        </td>
+                                        <td>
+                                            <button
+                                                type="button"
+                                                class="admin-user-view"
+                                                @click="selectUser(user)"
+                                            >
+                                                VIEW
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="admin-users-pagination">
+                                <span>
+                                    Page {{ usersPagination.current_page }} of {{ usersPagination.last_page }}
+                                    · {{ usersPagination.total }} users
+                                </span>
+                                <div>
+                                    <button
+                                        type="button"
+                                        :disabled="usersPagination.current_page <= 1 || usersLoading"
+                                        @click="loadUsers(usersPagination.current_page - 1)"
+                                    >
+                                        PREVIOUS
+                                    </button>
+                                    <button
+                                        type="button"
+                                        :disabled="usersPagination.current_page >= usersPagination.last_page || usersLoading"
+                                        @click="loadUsers(usersPagination.current_page + 1)"
+                                    >
+                                        NEXT
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <aside v-if="selectedUser" class="admin-user-detail">
+                        <header>
+                            <div>
+                                <p class="admin-eyebrow">ACCOUNT DETAILS</p>
+                                <h2>{{ selectedUser.first_name }} {{ selectedUser.last_name }}</h2>
+                            </div>
+                            <button
+                                type="button"
+                                class="admin-user-detail-close"
+                                aria-label="Close user details"
+                                @click="selectedUser = null"
+                            >
+                                ×
+                            </button>
+                        </header>
+
+                        <p v-if="userActionError" class="admin-error">{{ userActionError }}</p>
+                        <dl class="admin-user-fields">
+                            <div><dt>Email</dt><dd>{{ selectedUser.email }}</dd></div>
+                            <div><dt>Phone</dt><dd>{{ selectedUser.phone || 'Not provided' }}</dd></div>
+                            <div><dt>Role</dt><dd>{{ selectedUser.role }}</dd></div>
+                            <div><dt>Joined</dt><dd>{{ formatAdminDate(selectedUser.created_at) }}</dd></div>
+                            <div v-if="selectedUser.is_banned"><dt>Banned</dt><dd>{{ formatAdminDate(selectedUser.banned_at) }}</dd></div>
+                        </dl>
+
+                        <button
+                            v-if="selectedUser.role !== 'admin'"
+                            type="button"
+                            class="admin-user-ban"
+                            :class="{ 'is-banned': selectedUser.is_banned }"
+                            :disabled="banUpdating"
+                            @click="toggleUserBan"
+                        >
+                            {{ banUpdating ? 'SAVING…' : selectedUser.is_banned ? 'UNBAN USER' : 'BAN USER' }}
+                        </button>
+                        <p v-else class="admin-user-protected">Administrator accounts are protected.</p>
+
+                        <section class="admin-user-data">
+                            <h3>Calorie profile</h3>
+                            <p v-if="!userDetails?.calorie_profile">No calorie profile.</p>
+                            <p v-else>
+                                {{ userDetails.calorie_profile.height_cm }} cm ·
+                                {{ userDetails.calorie_profile.weight_kg }} kg ·
+                                age {{ userDetails.calorie_profile.age }} ·
+                                goal {{ userDetails.calorie_profile.goal }}
+                            </p>
+                        </section>
+
+                        <section class="admin-user-data">
+                            <h3>Recent body metrics</h3>
+                            <p v-if="!userDetails?.body_metrics?.length">No body metrics.</p>
+                            <div v-for="metric in userDetails?.body_metrics || []" :key="metric.id">
+                                {{ metric.entry_date }} · {{ metric.weight_kg ?? '—' }} kg ·
+                                waist {{ metric.waist_cm ?? '—' }} cm
+                            </div>
+                        </section>
+
+                        <section class="admin-user-data">
+                            <h3>Membership history</h3>
+                            <p v-if="!userDetails?.plan_purchases?.length">No memberships.</p>
+                            <div v-for="purchase in userDetails?.plan_purchases || []" :key="purchase.id">
+                                {{ purchase.plan?.name || 'Plan' }} · {{ purchase.status }} ·
+                                {{ purchase.start_date }} – {{ purchase.end_date }} ·
+                                {{ purchase.checkins_count }} check-ins
+                            </div>
+                        </section>
+
+                        <section class="admin-user-data">
+                            <h3>Recent workouts</h3>
+                            <p v-if="!userDetails?.workouts?.length">No workouts.</p>
+                            <div v-for="workout in userDetails?.workouts || []" :key="workout.id">
+                                {{ workout.name }} · {{ formatAdminDate(workout.started_at) }}
+                            </div>
+                        </section>
+
+                        <section class="admin-user-data">
+                            <h3>Recent payments</h3>
+                            <p v-if="!userDetails?.payments?.length">No payments.</p>
+                            <div v-for="payment in userDetails?.payments || []" :key="payment.id">
+                                {{ payment.amount }} · {{ payment.status }} ·
+                                {{ formatAdminDate(payment.payment_date) }}
+                            </div>
+                        </section>
+                    </aside>
                 </div>
             </section>
 
@@ -229,6 +409,20 @@ const supportLoading = ref(false);
 const replySending = ref(false);
 const closingConversation = ref(false);
 const supportFilter = ref('open');
+const users = ref([]);
+const userSearch = ref('');
+const userStatus = ref('all');
+const usersLoading = ref(false);
+const usersError = ref('');
+const userActionError = ref('');
+const usersPagination = ref({
+    current_page: 1,
+    last_page: 1,
+    total: 0,
+});
+const selectedUser = ref(null);
+const userDetails = ref(null);
+const banUpdating = ref(false);
 let supportRefreshTimer;
 
 const menuItems = [
@@ -438,6 +632,133 @@ async function sendSupportReply() {
 function formatSupportTime(value) {
     return new Date(value).toLocaleString(undefined, {
         dateStyle: 'short',
+        timeStyle: 'short',
+    });
+}
+
+function selectSection(section) {
+    activeSection.value = section;
+
+    if (section === 'users' && !users.value.length) {
+        loadUsers();
+    }
+}
+
+async function loadUsers(page = 1) {
+    usersLoading.value = true;
+    usersError.value = '';
+
+    const params = new URLSearchParams({
+        page: String(page),
+        status: userStatus.value,
+    });
+    if (userSearch.value.trim()) {
+        params.set('search', userSearch.value.trim());
+    }
+
+    try {
+        const response = await fetch(`/api/admin/users?${params}`, {
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin',
+        });
+
+        if (!response.ok) {
+            throw new Error('Could not load users.');
+        }
+
+        const data = await response.json();
+        users.value = data.data;
+        usersPagination.value = {
+            current_page: data.current_page,
+            last_page: data.last_page,
+            total: data.total,
+        };
+        if (selectedUser.value) {
+            selectedUser.value = users.value.find(user => user.id === selectedUser.value.id)
+                ?? selectedUser.value;
+        }
+    } catch (loadError) {
+        usersError.value = 'Could not load user accounts. Please try again.';
+    } finally {
+        usersLoading.value = false;
+    }
+}
+
+async function selectUser(user) {
+    selectedUser.value = user;
+    userDetails.value = null;
+    userActionError.value = '';
+
+    try {
+        const response = await fetch(`/api/admin/users/${user.id}`, {
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin',
+        });
+
+        if (!response.ok) {
+            throw new Error('Could not load user details.');
+        }
+
+        userDetails.value = await response.json();
+        selectedUser.value = {
+            ...user,
+            ...userDetails.value.user,
+        };
+    } catch (loadError) {
+        userActionError.value = 'Could not load user details. Please try again.';
+    }
+}
+
+async function toggleUserBan() {
+    if (!selectedUser.value || selectedUser.value.role === 'admin' || banUpdating.value) {
+        return;
+    }
+
+    banUpdating.value = true;
+    userActionError.value = '';
+
+    try {
+        const response = await fetch(`/api/admin/users/${selectedUser.value.id}/ban`, {
+            method: 'PATCH',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN':
+                    document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ is_banned: !selectedUser.value.is_banned }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Could not update user access.');
+        }
+
+        const data = await response.json();
+        selectedUser.value = {
+            ...selectedUser.value,
+            ...data.user,
+        };
+        if (userDetails.value) {
+            userDetails.value.user = selectedUser.value;
+        }
+        users.value = users.value.map(user => user.id === selectedUser.value.id
+            ? { ...user, ...data.user }
+            : user);
+    } catch (updateError) {
+        userActionError.value = 'Could not update account status. Please try again.';
+    } finally {
+        banUpdating.value = false;
+    }
+}
+
+function formatAdminDate(value) {
+    if (!value) {
+        return '—';
+    }
+
+    return new Date(value).toLocaleString(undefined, {
+        dateStyle: 'medium',
         timeStyle: 'short',
     });
 }

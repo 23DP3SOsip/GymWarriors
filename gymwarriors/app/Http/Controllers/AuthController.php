@@ -61,9 +61,17 @@ class AuthController extends Controller
         ]);
     }
 
-    $request->session()->regenerate();
-
     $user = Auth::user();
+
+    if ($user->is_banned) {
+        Auth::logout();
+
+        throw ValidationException::withMessages([
+            'email' => ['Šis konts ir bloķēts. Sazinies ar atbalsta dienestu.'],
+        ]);
+    }
+
+    $request->session()->regenerate();
 
     return response()->json([
         'message' => 'Pieteikšanās veiksmīga!',
