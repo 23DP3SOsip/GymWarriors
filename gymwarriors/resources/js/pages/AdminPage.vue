@@ -409,6 +409,118 @@
                 </div>
             </section>
 
+            <section v-else-if="activeSection === 'locations'" class="admin-locations">
+                <div class="admin-locations-heading">
+                    <div>
+                        <h2>Gym locations</h2>
+                        <p>Add, update, activate or remove locations shown to members.</p>
+                    </div>
+                    <button
+                        type="button"
+                        class="admin-location-add"
+                        @click="startNewLocation"
+                    >
+                        + ADD LOCATION
+                    </button>
+                </div>
+
+                <p v-if="locationsError" class="admin-error">{{ locationsError }}</p>
+                <p v-else-if="locationsLoading" class="admin-support-empty">Loading locations…</p>
+
+                <div v-else class="admin-locations-layout">
+                    <div class="admin-location-list">
+                        <p v-if="!locations.length" class="admin-support-empty">No locations yet.</p>
+                        <article
+                            v-for="location in locations"
+                            :key="location.id"
+                            class="admin-location-card"
+                        >
+                            <div class="admin-location-card-main">
+                                <span class="admin-location-status" :class="{ inactive: !location.active }">
+                                    {{ location.active ? 'ACTIVE' : 'INACTIVE' }}
+                                </span>
+                                <h3>{{ location.name }}</h3>
+                                <p>{{ location.address }}, {{ location.city }}</p>
+                                <small>
+                                    {{ location.purchase_locations_count }} plan assignments ·
+                                    {{ location.checkins_count }} check-ins
+                                </small>
+                            </div>
+                            <div class="admin-location-card-actions">
+                                <button
+                                    type="button"
+                                    class="admin-location-edit"
+                                    @click="editLocation(location)"
+                                >
+                                    EDIT
+                                </button>
+                                <button
+                                    type="button"
+                                    class="admin-location-delete"
+                                    :disabled="location.purchase_locations_count > 0 || location.checkins_count > 0"
+                                    :title="location.purchase_locations_count > 0 || location.checkins_count > 0
+                                        ? 'Locations used in purchases or check-ins cannot be deleted. Deactivate them instead.'
+                                        : 'Delete location'"
+                                    @click="deleteLocation(location)"
+                                >
+                                    DELETE
+                                </button>
+                            </div>
+                        </article>
+                    </div>
+
+                    <form
+                        class="admin-location-editor"
+                        @submit.prevent="saveLocation"
+                    >
+                        <p class="admin-eyebrow">{{ locationDraft.id ? 'EDIT LOCATION' : 'NEW LOCATION' }}</p>
+                        <h3>{{ locationDraft.id ? 'Update location' : 'Add a location' }}</h3>
+                        <p v-if="locationFormError" class="admin-error">{{ locationFormError }}</p>
+
+                        <label>
+                            Location name
+                            <input v-model.trim="locationDraft.name" maxlength="150" required>
+                        </label>
+
+                        <label>
+                            Address
+                            <input v-model.trim="locationDraft.address" maxlength="255" required>
+                        </label>
+
+                        <label>
+                            City
+                            <input v-model.trim="locationDraft.city" maxlength="100" required>
+                        </label>
+
+                        <label class="admin-location-active">
+                            <input v-model="locationDraft.active" type="checkbox">
+                            Active — visible for new membership purchases
+                        </label>
+
+                        <p class="admin-location-editor-note">
+                            Existing purchase and check-in history is preserved. Used locations can be deactivated but not deleted.
+                        </p>
+
+                        <div class="admin-location-editor-actions">
+                            <button type="submit" :disabled="locationSaving">
+                                {{ locationSaving
+                                    ? 'SAVING…'
+                                    : locationDraft.id ? 'SAVE CHANGES' : 'CREATE LOCATION' }}
+                            </button>
+                            <button
+                                v-if="locationDraft.id"
+                                type="button"
+                                class="admin-location-cancel"
+                                :disabled="locationSaving"
+                                @click="startNewLocation"
+                            >
+                                CANCEL
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
             <section v-else-if="activeSection === 'support'" class="admin-support">
                 <div class="admin-support-inbox">
                     <div class="admin-support-inbox-heading">
@@ -585,6 +697,12 @@ const plansError = ref('');
 const planSaveError = ref('');
 const planDraft = ref(null);
 const planSaving = ref(false);
+const locations = ref([]);
+const locationsLoading = ref(false);
+const locationsError = ref('');
+const locationFormError = ref('');
+const locationSaving = ref(false);
+const locationDraft = ref(createEmptyLocation());
 let supportRefreshTimer;
 
 const menuItems = [
@@ -806,6 +924,141 @@ function selectSection(section) {
     }
     if (section === 'memberships' && !plans.value.length) {
         loadPlans();
+    }
+    if (section === 'locations' && !locations.value.length) {
+        loadLocations();
+    }
+}
+
+function createEmptyLocation() {
+    return {
+        id: null,
+        name: '',
+        address: '',
+        city: '',
+        active: true,
+    };
+}
+
+async function loadLocations() {
+    locationsLoading.value = true;
+    locationsError.value = '';
+
+    try {
+        const response = await fetch('/api/admin/locations', {
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin',
+        });
+
+        if (!response.ok) {
+            throw new Error('Could not load locations.');
+        }
+
+        const data = await response.json();
+        locations.value = data.locations;
+        stats.value.locations = data.locations.length;
+    } catch (loadError) {
+        locationsError.value = 'Could not load locations. Please try again.';
+    } finally {
+        locationsLoading.value = false;
+    }
+}
+
+function startNewLocation() {
+    locationDraft.value = createEmptyLocation();
+    locationFormError.value = '';
+}
+
+function editLocation(location) {
+    locationDraft.value = { ...location };
+    locationFormError.value = '';
+}
+
+async function saveLocation() {
+    if (locationSaving.value) {
+        return;
+    }
+
+    locationSaving.value = true;
+    locationFormError.value = '';
+    const isEditing = Boolean(locationDraft.value.id);
+
+    try {
+        const response = await fetch(
+            isEditing
+                ? `/api/admin/locations/${locationDraft.value.id}`
+                : '/api/admin/locations',
+            {
+                method: isEditing ? 'PUT' : 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN':
+                        document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    name: locationDraft.value.name,
+                    address: locationDraft.value.address,
+                    city: locationDraft.value.city,
+                    active: locationDraft.value.active,
+                }),
+            },
+        );
+
+        if (!response.ok) {
+            const data = await response.json().catch(() => null);
+            throw new Error(data?.errors
+                ? Object.values(data.errors).flat().join(' ')
+                : data?.message || 'Could not save location.');
+        }
+
+        await loadLocations();
+        startNewLocation();
+    } catch (saveError) {
+        locationFormError.value = saveError instanceof Error
+            ? saveError.message
+            : 'Could not save location. Please try again.';
+    } finally {
+        locationSaving.value = false;
+    }
+}
+
+async function deleteLocation(location) {
+    if (location.purchase_locations_count > 0 || location.checkins_count > 0) {
+        return;
+    }
+
+    if (!window.confirm(`Delete ${location.name}? This cannot be undone.`)) {
+        return;
+    }
+
+    locationsError.value = '';
+
+    try {
+        const response = await fetch(`/api/admin/locations/${location.id}`, {
+            method: 'DELETE',
+            headers: {
+                Accept: 'application/json',
+                'X-CSRF-TOKEN':
+                    document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+            },
+            credentials: 'same-origin',
+        });
+
+        if (!response.ok) {
+            const data = await response.json().catch(() => null);
+            throw new Error(data?.message || 'Could not delete location.');
+        }
+
+        if (locationDraft.value.id === location.id) {
+            startNewLocation();
+        }
+        await loadLocations();
+    } catch (deleteError) {
+        locationsError.value = deleteError instanceof Error
+            ? deleteError.message
+            : 'Could not delete location. Please try again.';
     }
 }
 
