@@ -7,7 +7,6 @@ import ProfilePage from '../pages/ProfilePage.vue';
 import PlansPage from '../pages/PlansPage.vue';
 import CaloriesPage from '../pages/CaloriesPage.vue';
 import WorkoutPage from '../pages/WorkoutPage.vue';
-import ReportsPage from '../pages/ReportsPage.vue';
 import AdminPage from '../pages/AdminPage.vue';
 
 const router = createRouter({
@@ -56,11 +55,6 @@ const router = createRouter({
             path: '/workout',
             name: 'workout',
             component: WorkoutPage,
-        },
-        {
-            path: '/reports',
-            name: 'reports',
-            component: ReportsPage,
         },
         {
             path: '/admin',

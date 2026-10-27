@@ -787,23 +787,32 @@ const isMenuOpen = ref(false);
 // =====================================================
 
 const checkAuthentication = async () => {
-
     try {
-
         const response = await fetch('/api/user', {
             headers: {
                 Accept: 'application/json',
             },
         });
 
-        isLoggedIn.value = response.ok;
+        if (response.status === 401 || response.status === 403) {
+            isLoggedIn.value = false;
+            return;
+        }
 
+        if (!response.ok) {
+            isLoggedIn.value = false;
+            console.error('Neizdevās pārbaudīt lietotāja autentifikāciju.');
+            return;
+        }
+
+        isLoggedIn.value = true;
     } catch (error) {
-
         isLoggedIn.value = false;
-
+        console.error(
+            'Neizdevās izveidot savienojumu ar autentifikācijas API.',
+            error
+        );
     }
-
 };
 
 
