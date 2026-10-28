@@ -9,7 +9,6 @@
                 <router-link to="/profile#friends">FRIENDS</router-link>
                 <router-link to="/calories">CALORIE TRACKING</router-link>
                 <router-link to="/workout" class="nav-current">WORKOUTS AND NUTRITION</router-link>
-                <router-link to="/reports">REPORTS</router-link>
             </nav>
             <button type="button" class="page-mobile-burger" @click="isMenuOpen = !isMenuOpen" :aria-expanded="isMenuOpen" aria-label="Open navigation menu">
                 <span></span><span></span><span></span>
@@ -25,7 +24,6 @@
             <router-link to="/profile#friends" @click="isMenuOpen = false">FRIENDS</router-link>
             <router-link to="/calories" @click="isMenuOpen = false">CALORIE TRACKING</router-link>
             <router-link to="/workout" @click="isMenuOpen = false">WORKOUTS AND NUTRITION</router-link>
-            <router-link to="/reports" @click="isMenuOpen = false">REPORTS</router-link>
             <button type="button" @click="logout">LOG OUT</button>
         </div>
 
@@ -139,8 +137,27 @@
                 </div>
             </section>
 
+            <section class="profile-section">
+                <div class="section-title"><span>04</span> MEET OUR TRAINERS</div>
+                <p v-if="trainersError" class="calorie-message error">{{ trainersError }}</p>
+                <p v-else-if="trainersLoading" class="calorie-note">Loading trainers…</p>
+                <div v-else class="trainer-library">
+                    <p v-if="!trainers.length" class="calorie-note">No trainers are available right now.</p>
+                    <article v-for="trainer in trainers" :key="trainer.id" class="trainer-card">
+                        <img :src="trainer.image" :alt="`${trainer.first_name} ${trainer.last_name}`" class="trainer-image" />
+                        <div class="trainer-card-content">
+                            <p class="trainer-specialty">{{ trainer.specialty }}</p>
+                            <h2>{{ trainer.first_name }} {{ trainer.last_name }}</h2>
+                            <button type="button" class="membership-button" @click="selectedTrainer = trainer">
+                                GET MORE INFO
+                            </button>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
             <section v-if="selectedTemplate" class="profile-section">
-                <div class="section-title"><span>04</span> SAVE WORKOUT</div>
+                <div class="section-title"><span>05</span> SAVE WORKOUT</div>
                 <form class="calorie-form" @submit.prevent="saveWorkout">
                     <label class="calorie-wide">NOTES
                         <input v-model="workoutNotes" type="text" maxlength="2000" placeholder="How did the workout feel?" />
@@ -153,7 +170,7 @@
             </section>
 
             <section v-if="history.length" class="profile-section">
-                <div class="section-title"><span>05</span> YOUR WORKOUT HISTORY</div>
+                <div class="section-title"><span>06</span> YOUR WORKOUT HISTORY</div>
                 <div class="workout-history">
                     <article v-for="workout in history" :key="workout.id">
                         <strong>{{ workout.name }}</strong>
@@ -162,11 +179,36 @@
                 </div>
             </section>
         </main>
+
+        <div
+            v-if="selectedTrainer"
+            class="trainer-modal-overlay"
+            role="presentation"
+            @click.self="selectedTrainer = null"
+            @keydown.esc="selectedTrainer = null"
+        >
+            <section class="trainer-modal" role="dialog" aria-modal="true" :aria-labelledby="`trainer-title-${selectedTrainer.id}`">
+                <button type="button" class="trainer-modal-close" aria-label="Close trainer information" @click="selectedTrainer = null">
+                    &times;
+                </button>
+                <img :src="selectedTrainer.image" :alt="`${selectedTrainer.first_name} ${selectedTrainer.last_name}`" class="trainer-modal-image" />
+                <div class="trainer-modal-content">
+                    <p class="trainer-specialty">{{ selectedTrainer.specialty }}</p>
+                    <h2 :id="`trainer-title-${selectedTrainer.id}`">{{ selectedTrainer.first_name }} {{ selectedTrainer.last_name }}</h2>
+                    <p class="trainer-experience">{{ selectedTrainer.experience }}</p>
+                    <p class="trainer-description">{{ selectedTrainer.description }}</p>
+                    <div class="trainer-contact">
+                        <a :href="`mailto:${selectedTrainer.email}`">{{ selectedTrainer.email }}</a>
+                        <a :href="`tel:${selectedTrainer.phone.replaceAll(' ', '')}`">{{ selectedTrainer.phone }}</a>
+                    </div>
+                </div>
+            </section>
+        </div>
     </div>
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, onUnmounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -178,6 +220,7 @@ const templates = ref([]);
 const availableExercises = ref([]);
 const history = ref([]);
 const selectedTemplate = ref(null);
+const selectedTrainer = ref(null);
 const workoutNotes = ref('');
 const savingWorkout = ref(false);
 const workoutMessage = ref('');
@@ -205,6 +248,9 @@ const workoutTypes = [
     { value: 'hiit', label: 'HIIT / interval training' },
     { value: 'flexibility', label: 'Mobility / stretching' },
 ];
+const trainers = ref([]);
+const trainersLoading = ref(true);
+const trainersError = ref('');
 const form = reactive({
     height_cm: null,
     weight_kg: null,
@@ -267,6 +313,32 @@ const loadWorkoutData = async () => {
     if (templatesResponse.ok) templates.value = (await templatesResponse.json()).workouts;
     if (historyResponse.ok) history.value = (await historyResponse.json()).workouts;
     if (exercisesResponse.ok) availableExercises.value = (await exercisesResponse.json()).exercises;
+};
+
+const loadTrainers = async () => {
+    trainersLoading.value = true;
+    trainersError.value = '';
+
+    try {
+        const response = await fetch('/api/trainers', {
+            headers: { Accept: 'application/json' },
+        });
+
+        if (response.status === 401) {
+            router.push('/login');
+            return;
+        }
+        if (!response.ok) {
+            throw new Error('Could not load trainers.');
+        }
+
+        trainers.value = (await response.json()).trainers;
+    } catch (error) {
+        trainersError.value = 'Could not load trainers. Please try again.';
+        console.error('TRAINER LOAD ERROR:', error);
+    } finally {
+        trainersLoading.value = false;
+    }
 };
 
 const addWorkoutExercise = () => {
@@ -358,8 +430,19 @@ const logout = async () => {
     router.push('/');
 };
 
+const handleTrainerModalKeydown = (event) => {
+    if (event.key === 'Escape') {
+        selectedTrainer.value = null;
+    }
+};
+
 onMounted(async () => {
+    window.addEventListener('keydown', handleTrainerModalKeydown);
     await loadProfile();
-    await loadWorkoutData();
+    await Promise.all([loadWorkoutData(), loadTrainers()]);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('keydown', handleTrainerModalKeydown);
 });
 </script>

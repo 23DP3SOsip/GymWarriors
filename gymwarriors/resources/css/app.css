@@ -1302,6 +1302,17 @@ button {
     background: #ff202b;
 }
 
+.membership-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.membership-action-error {
+    margin-bottom: 16px;
+    color: #ff6b6b;
+}
+
 .account-actions {
     display: flex;
 }

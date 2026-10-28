@@ -20,6 +20,7 @@ use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminPlanController;
 use App\Http\Controllers\AdminLocationController;
+use App\Http\Controllers\TrainerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Middleware\EnsureUserIsAdmin;
 
@@ -50,8 +51,42 @@ Route::middleware('auth')->get('/api/user', function (Request $request) {
         'last_name' => $request->user()->last_name,
         'email' => $request->user()->email,
         'phone' => $request->user()->phone,
+        'role' => $request->user()->role,
+        'has_active_membership' => PlanPurchase::query()
+            ->where('user_id', $request->user()->id)
+            ->whereIn('status', ['active', 'cancelled'])
+            ->whereDate('end_date', '>=', now()->toDateString())
+            ->exists(),
     ]);
 
+});
+
+Route::get('/api/homepage', function () {
+    $plans = Plan::query()
+        ->orderBy('id')
+        ->get()
+        ->map(fn (Plan $plan) => [
+            'id' => $plan->id,
+            'name' => $plan->name,
+            'price' => $plan->price,
+            'features' => $plan->features ?: [
+                'Gym access',
+                'Workout tracking',
+                'Progress tracking',
+                $plan->max_locations === null
+                    ? 'Unlimited locations'
+                    : "Up to {$plan->max_locations} locations",
+            ],
+        ]);
+
+    return response()->json([
+        'stats' => [
+            'warriors' => \App\Models\User::where('is_banned', false)->count(),
+            'workouts' => \App\Models\UserWorkout::count(),
+            'locations' => Location::where('active', true)->count(),
+        ],
+        'plans' => $plans,
+    ]);
 });
 
 
@@ -305,7 +340,7 @@ Route::middleware('auth')->get('/api/profile', function (Request $request) {
 
     $purchase = PlanPurchase::with('plan')
         ->where('user_id', $request->user()->id)
-        ->where('status', 'active')
+        ->whereIn('status', ['active', 'cancelled'])
         ->whereDate(
             'end_date',
             '>=',
@@ -401,6 +436,7 @@ Route::middleware('auth')->get('/api/profile', function (Request $request) {
 
 Route::middleware('auth')->group(function () {
     Route::put('/api/profile', [ProfileController::class, 'update']);
+    Route::post('/api/profile/membership/cancel', [ProfileController::class, 'cancelMembership']);
     Route::get('/api/leaderboard', [LeaderboardController::class, 'index']);
     Route::get('/api/qr-code', [QrCodeController::class, 'show']);
     Route::post('/api/qr-code', [QrCodeController::class, 'store']);
@@ -416,8 +452,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/workout-templates', [WorkoutController::class, 'storeTemplate']);
     Route::get('/api/workouts', [WorkoutController::class, 'history']);
     Route::post('/api/workouts', [WorkoutController::class, 'store']);
-    Route::get('/api/reports', [ReportController::class, 'index']);
-    Route::middleware('admin')->get('/api/admin/reports', [ReportController::class, 'index']);
+    Route::get('/api/trainers', [TrainerController::class, 'index']);
     Route::get('/api/friends', [FriendController::class, 'index']);
     Route::get('/api/friends/search', [FriendController::class, 'search']);
     Route::post('/api/friends', [FriendController::class, 'store']);
@@ -432,10 +467,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/support/messages', [SupportChatController::class, 'storeMessage']);
 
     Route::middleware('admin')->group(function () {
+        Route::get('/api/admin/reports', [ReportController::class, 'index']);
         Route::get('/api/admin/locations', [AdminLocationController::class, 'index']);
         Route::post('/api/admin/locations', [AdminLocationController::class, 'store']);
         Route::put('/api/admin/locations/{location}', [AdminLocationController::class, 'update']);
         Route::delete('/api/admin/locations/{location}', [AdminLocationController::class, 'destroy']);
+        Route::get('/api/admin/trainers', [TrainerController::class, 'index']);
+        Route::post('/api/admin/trainers', [TrainerController::class, 'store']);
+        Route::put('/api/admin/trainers/{trainer}', [TrainerController::class, 'update']);
+        Route::delete('/api/admin/trainers/{trainer}', [TrainerController::class, 'destroy']);
         Route::get('/api/admin/plans', [AdminPlanController::class, 'index']);
         Route::put('/api/admin/plans/{plan}', [AdminPlanController::class, 'update']);
         Route::get('/api/admin/users', [AdminUserController::class, 'index']);

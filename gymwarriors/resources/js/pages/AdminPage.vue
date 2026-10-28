@@ -521,6 +521,279 @@
                 </div>
             </section>
 
+            <section v-else-if="activeSection === 'trainers'" class="admin-locations">
+                <div class="admin-locations-heading">
+                    <div>
+                        <h2>Trainer management</h2>
+                        <p>Add, edit or remove the trainers shown on the workouts page.</p>
+                    </div>
+                    <button
+                        type="button"
+                        class="admin-location-add"
+                        @click="startNewTrainer"
+                    >
+                        + ADD TRAINER
+                    </button>
+                </div>
+
+                <p v-if="trainersError" class="admin-error">{{ trainersError }}</p>
+                <p v-else-if="trainersLoading" class="admin-support-empty">Loading trainers…</p>
+
+                <div v-else class="admin-locations-layout">
+                    <div class="admin-location-list">
+                        <p v-if="!trainers.length" class="admin-support-empty">No trainers yet.</p>
+                        <article
+                            v-for="trainer in trainers"
+                            :key="trainer.id"
+                            class="admin-trainer-card"
+                        >
+                            <img :src="trainer.image" :alt="`${trainer.first_name} ${trainer.last_name}`">
+                            <div class="admin-location-card-main">
+                                <span class="admin-location-status">{{ trainer.specialty }}</span>
+                                <h3>{{ trainer.first_name }} {{ trainer.last_name }}</h3>
+                                <p>{{ trainer.email }} · {{ trainer.phone }}</p>
+                                <small>{{ trainer.experience }}</small>
+                            </div>
+                            <div class="admin-location-card-actions">
+                                <button
+                                    type="button"
+                                    class="admin-location-edit"
+                                    @click="editTrainer(trainer)"
+                                >
+                                    EDIT
+                                </button>
+                                <button
+                                    type="button"
+                                    class="admin-location-delete"
+                                    @click="deleteTrainer(trainer)"
+                                >
+                                    DELETE
+                                </button>
+                            </div>
+                        </article>
+                    </div>
+
+                    <form class="admin-location-editor" @submit.prevent="saveTrainer">
+                        <p class="admin-eyebrow">{{ trainerDraft.id ? 'EDIT TRAINER' : 'NEW TRAINER' }}</p>
+                        <h3>{{ trainerDraft.id ? 'Update trainer' : 'Add a trainer' }}</h3>
+                        <p v-if="trainerFormError" class="admin-error">{{ trainerFormError }}</p>
+
+                        <label>
+                            First name
+                            <input v-model.trim="trainerDraft.first_name" maxlength="100" required>
+                        </label>
+
+                        <label>
+                            Last name
+                            <input v-model.trim="trainerDraft.last_name" maxlength="100" required>
+                        </label>
+
+                        <label>
+                            Specialty
+                            <input v-model.trim="trainerDraft.specialty" maxlength="150" required>
+                        </label>
+
+                        <label>
+                            Experience
+                            <input v-model.trim="trainerDraft.experience" maxlength="150" required>
+                        </label>
+
+                        <label>
+                            Description
+                            <textarea v-model.trim="trainerDraft.description" maxlength="2000" rows="5" required></textarea>
+                        </label>
+
+                        <label>
+                            Email
+                            <input v-model.trim="trainerDraft.email" type="email" maxlength="255" required>
+                        </label>
+
+                        <label>
+                            Phone
+                            <input v-model.trim="trainerDraft.phone" type="tel" maxlength="50" required>
+                        </label>
+
+                        <label>
+                            Photo URL or public path
+                            <input
+                                v-model.trim="trainerDraft.image"
+                                type="text"
+                                maxlength="2048"
+                                placeholder="/images/trainers/trainer-1.jpg"
+                                required
+                            >
+                        </label>
+                        <p class="admin-location-editor-note">
+                            Use an HTTPS image URL or a path inside the public /images folder.
+                        </p>
+
+                        <div class="admin-location-editor-actions">
+                            <button type="submit" :disabled="trainerSaving">
+                                {{ trainerSaving
+                                    ? 'SAVING…'
+                                    : trainerDraft.id ? 'SAVE CHANGES' : 'CREATE TRAINER' }}
+                            </button>
+                            <button
+                                v-if="trainerDraft.id"
+                                type="button"
+                                class="admin-location-cancel"
+                                :disabled="trainerSaving"
+                                @click="startNewTrainer"
+                            >
+                                CANCEL
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <section v-else-if="activeSection === 'reports'" class="admin-reports">
+                <div class="admin-reports-heading">
+                    <div>
+                        <p class="admin-eyebrow">BUSINESS OVERVIEW</p>
+                        <h2>Payments & visits</h2>
+                        <p>Review membership revenue and gym attendance across all members.</p>
+                    </div>
+                </div>
+
+                <form class="admin-report-filters" @submit.prevent="loadAdminReport">
+                    <label>
+                        Period
+                        <select v-model="reportPeriod" @change="changeReportPeriod">
+                            <option value="all_time">All time</option>
+                            <option value="last_30_days">Last 30 days</option>
+                            <option value="last_12_months">Last 12 months</option>
+                            <option value="custom">Custom range</option>
+                        </select>
+                    </label>
+                    <label>
+                        From
+                        <input v-model="reportFilters.from" type="date" :disabled="reportPeriod === 'all_time'">
+                    </label>
+                    <label>
+                        To
+                        <input v-model="reportFilters.to" type="date" :disabled="reportPeriod === 'all_time'">
+                    </label>
+                    <label>
+                        Location
+                        <select v-model="reportFilters.location_id">
+                            <option value="">All locations</option>
+                            <option v-for="location in reportLocations" :key="location.id" :value="location.id">
+                                {{ location.name }}
+                            </option>
+                        </select>
+                    </label>
+                    <label>
+                        User ID
+                        <input v-model="reportFilters.user_id" type="number" min="1" placeholder="All users">
+                    </label>
+                    <button type="submit" :disabled="reportLoading">
+                        {{ reportLoading ? 'LOADING…' : 'APPLY FILTERS' }}
+                    </button>
+                </form>
+
+                <p v-if="reportError" class="admin-error">{{ reportError }}</p>
+                <p v-else-if="reportLoading && !adminReport" class="admin-support-empty">Loading reports…</p>
+
+                <template v-if="adminReport">
+                    <div class="admin-report-summary">
+                        <article>
+                            <span>MEMBERSHIP SALES</span>
+                            <strong>{{ adminReport.summary.payments_count }}</strong>
+                        </article>
+                        <article>
+                            <span>MEMBERSHIP REVENUE</span>
+                            <strong>{{ formatReportMoney(adminReport.summary.payments_total) }}</strong>
+                        </article>
+                        <article>
+                            <span>VISITS</span>
+                            <strong>{{ adminReport.summary.visits_count }}</strong>
+                        </article>
+                        <article>
+                            <span>TOKENS USED</span>
+                            <strong>{{ adminReport.summary.tokens_used }}</strong>
+                        </article>
+                    </div>
+
+                    <div class="admin-report-charts">
+                        <article class="admin-report-panel">
+                            <h3>MEMBERSHIP REVENUE BY DAY</h3>
+                            <div v-if="adminReport.payment_trend.length" class="admin-report-bars">
+                                <div v-for="item in adminReport.payment_trend" :key="item.date" class="admin-report-bar-column">
+                                    <div
+                                        class="admin-report-bar payment"
+                                        :style="{ height: `${reportBarHeight(item.value, maxReportPayment)}%` }"
+                                        :title="formatReportMoney(item.value)"
+                                    ></div>
+                                    <small>{{ formatReportShortDate(item.date) }}</small>
+                                </div>
+                            </div>
+                            <p v-else class="admin-report-empty">No membership sales in this period.</p>
+                        </article>
+                        <article class="admin-report-panel">
+                            <h3>VISITS BY DAY</h3>
+                            <div v-if="adminReport.visit_trend.length" class="admin-report-bars">
+                                <div v-for="item in adminReport.visit_trend" :key="item.date" class="admin-report-bar-column">
+                                    <div
+                                        class="admin-report-bar visits"
+                                        :style="{ height: `${reportBarHeight(item.value, maxReportVisits)}%` }"
+                                        :title="`${item.value} visits`"
+                                    ></div>
+                                    <small>{{ formatReportShortDate(item.date) }}</small>
+                                </div>
+                            </div>
+                            <p v-else class="admin-report-empty">No visits in this period.</p>
+                        </article>
+                    </div>
+
+                    <div class="admin-report-tables">
+                        <article class="admin-report-panel">
+                            <h3>MEMBERSHIP SALES HISTORY</h3>
+                            <div class="admin-report-table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr><th>Date</th><th>Member</th><th>Plan</th><th>Amount</th><th>Status</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="payment in adminReport.payments" :key="payment.id">
+                                            <td>{{ formatReportDate(payment.payment_date) }}</td>
+                                            <td>{{ payment.user_name }}</td>
+                                            <td>{{ payment.plan_name }}</td>
+                                            <td>{{ formatReportMoney(payment.amount) }}</td>
+                                            <td>{{ payment.status }}</td>
+                                        </tr>
+                                        <tr v-if="!adminReport.payments.length">
+                                            <td colspan="5" class="admin-report-empty">No membership sales found.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </article>
+                        <article class="admin-report-panel">
+                            <h3>VISIT HISTORY</h3>
+                            <div class="admin-report-table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr><th>Date</th><th>Member</th><th>Location</th><th>Token</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="visit in adminReport.visits" :key="visit.id">
+                                            <td>{{ formatReportDate(visit.time) }}</td>
+                                            <td>{{ visit.user_name }}</td>
+                                            <td>{{ visit.location_name }}</td>
+                                            <td>{{ visit.token_removed ? 'Used' : 'Not used' }}</td>
+                                        </tr>
+                                        <tr v-if="!adminReport.visits.length">
+                                            <td colspan="4" class="admin-report-empty">No visits found.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </article>
+                    </div>
+                </template>
+            </section>
+
             <section v-else-if="activeSection === 'support'" class="admin-support">
                 <div class="admin-support-inbox">
                     <div class="admin-support-inbox-heading">
@@ -703,6 +976,23 @@ const locationsError = ref('');
 const locationFormError = ref('');
 const locationSaving = ref(false);
 const locationDraft = ref(createEmptyLocation());
+const trainers = ref([]);
+const trainersLoading = ref(false);
+const trainersError = ref('');
+const trainerFormError = ref('');
+const trainerSaving = ref(false);
+const trainerDraft = ref(createEmptyTrainer());
+const reportLocations = ref([]);
+const reportLoading = ref(false);
+const reportError = ref('');
+const adminReport = ref(null);
+const reportFilters = ref({
+    from: '',
+    to: '',
+    location_id: '',
+    user_id: '',
+});
+const reportPeriod = ref('all_time');
 let supportRefreshTimer;
 
 const menuItems = [
@@ -710,6 +1000,7 @@ const menuItems = [
     { id: 'users', label: 'Users' },
     { id: 'memberships', label: 'Memberships' },
     { id: 'locations', label: 'Locations' },
+    { id: 'trainers', label: 'Trainers' },
     { id: 'reports', label: 'Reports' },
     { id: 'support', label: 'Support' },
 ];
@@ -723,6 +1014,14 @@ const closedSupportConversations = computed(() => supportConversations.value
 const filteredSupportConversations = computed(() => supportFilter.value === 'open'
     ? openSupportConversations.value
     : closedSupportConversations.value);
+const maxReportPayment = computed(() => Math.max(
+    ...(adminReport.value?.payment_trend ?? []).map(item => item.value),
+    1,
+));
+const maxReportVisits = computed(() => Math.max(
+    ...(adminReport.value?.visit_trend ?? []).map(item => item.value),
+    1,
+));
 
 const currentTitle = computed(() => {
     return menuItems.find(item => item.id === activeSection.value)?.label
@@ -927,6 +1226,259 @@ function selectSection(section) {
     }
     if (section === 'locations' && !locations.value.length) {
         loadLocations();
+    }
+    if (section === 'trainers' && !trainers.value.length) {
+        loadTrainers();
+    }
+    if (section === 'reports' && !adminReport.value) {
+        loadAdminReportsData();
+    }
+}
+
+async function loadAdminReportsData() {
+    const [locationsResult, reportResult] = await Promise.allSettled([
+        fetch('/api/admin/locations', {
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin',
+        }),
+        loadAdminReport(),
+    ]);
+
+    if (locationsResult.status === 'fulfilled' && locationsResult.value.ok) {
+        reportLocations.value = (await locationsResult.value.json()).locations;
+    } else {
+        reportError.value = 'Could not load report locations. Please try again.';
+    }
+
+    if (reportResult.status === 'rejected') {
+        reportError.value = 'Could not load reports. Please try again.';
+    }
+}
+
+function changeReportPeriod() {
+    if (reportPeriod.value === 'all_time') {
+        reportFilters.value.from = '';
+        reportFilters.value.to = '';
+        loadAdminReport();
+        return;
+    }
+
+    if (reportPeriod.value === 'custom') {
+        return;
+    }
+
+    const today = new Date();
+    const toDate = formatReportInputDate(today);
+    const fromDate = new Date(today);
+    if (reportPeriod.value === 'last_30_days') {
+        fromDate.setDate(fromDate.getDate() - 29);
+    } else {
+        fromDate.setFullYear(fromDate.getFullYear() - 1);
+        fromDate.setDate(fromDate.getDate() + 1);
+    }
+
+    reportFilters.value.from = formatReportInputDate(fromDate);
+    reportFilters.value.to = toDate;
+    loadAdminReport();
+}
+
+async function loadAdminReport() {
+    reportLoading.value = true;
+    reportError.value = '';
+    const params = new URLSearchParams();
+    Object.entries(reportFilters.value).forEach(([key, value]) => {
+        if (value) {
+            params.set(key, value);
+        }
+    });
+
+    try {
+        const response = await fetch(`/api/admin/reports?${params}`, {
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin',
+        });
+
+        if (response.status === 401 || response.status === 403) {
+            await router.replace('/login');
+            return;
+        }
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'Could not load reports.');
+        }
+
+        adminReport.value = data;
+    } catch (loadError) {
+        reportError.value = loadError instanceof Error
+            ? loadError.message
+            : 'Could not load reports. Please try again.';
+    } finally {
+        reportLoading.value = false;
+    }
+}
+
+function formatReportMoney(value) {
+    return new Intl.NumberFormat('en-IE', {
+        style: 'currency',
+        currency: 'EUR',
+    }).format(value || 0);
+}
+
+function formatReportDate(value) {
+    return new Date(value).toLocaleString();
+}
+
+function formatReportInputDate(value) {
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const day = String(value.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+}
+
+function formatReportShortDate(value) {
+    return new Date(`${value}T00:00:00`).toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+    });
+}
+
+function reportBarHeight(value, max) {
+    return Math.max((value / max) * 100, 4);
+}
+
+function createEmptyTrainer() {
+    return {
+        id: null,
+        first_name: '',
+        last_name: '',
+        specialty: '',
+        experience: '',
+        description: '',
+        email: '',
+        phone: '',
+        image: '',
+    };
+}
+
+async function loadTrainers() {
+    trainersLoading.value = true;
+    trainersError.value = '';
+
+    try {
+        const response = await fetch('/api/admin/trainers', {
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin',
+        });
+
+        if (!response.ok) {
+            throw new Error('Could not load trainers.');
+        }
+
+        trainers.value = (await response.json()).trainers;
+    } catch (loadError) {
+        trainersError.value = 'Could not load trainers. Please try again.';
+    } finally {
+        trainersLoading.value = false;
+    }
+}
+
+function startNewTrainer() {
+    trainerDraft.value = createEmptyTrainer();
+    trainerFormError.value = '';
+}
+
+function editTrainer(trainer) {
+    trainerDraft.value = { ...trainer };
+    trainerFormError.value = '';
+}
+
+async function saveTrainer() {
+    if (trainerSaving.value) {
+        return;
+    }
+
+    trainerSaving.value = true;
+    trainerFormError.value = '';
+    const isEditing = Boolean(trainerDraft.value.id);
+
+    try {
+        const response = await fetch(
+            isEditing
+                ? `/api/admin/trainers/${trainerDraft.value.id}`
+                : '/api/admin/trainers',
+            {
+                method: isEditing ? 'PUT' : 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN':
+                        document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    first_name: trainerDraft.value.first_name,
+                    last_name: trainerDraft.value.last_name,
+                    specialty: trainerDraft.value.specialty,
+                    experience: trainerDraft.value.experience,
+                    description: trainerDraft.value.description,
+                    email: trainerDraft.value.email,
+                    phone: trainerDraft.value.phone,
+                    image: trainerDraft.value.image,
+                }),
+            },
+        );
+
+        if (!response.ok) {
+            const data = await response.json().catch(() => null);
+            throw new Error(data?.errors
+                ? Object.values(data.errors).flat().join(' ')
+                : data?.message || 'Could not save trainer.');
+        }
+
+        await loadTrainers();
+        startNewTrainer();
+    } catch (saveError) {
+        trainerFormError.value = saveError instanceof Error
+            ? saveError.message
+            : 'Could not save trainer. Please try again.';
+    } finally {
+        trainerSaving.value = false;
+    }
+}
+
+async function deleteTrainer(trainer) {
+    if (!window.confirm(`Delete ${trainer.first_name} ${trainer.last_name}? This cannot be undone.`)) {
+        return;
+    }
+
+    trainersError.value = '';
+
+    try {
+        const response = await fetch(`/api/admin/trainers/${trainer.id}`, {
+            method: 'DELETE',
+            headers: {
+                Accept: 'application/json',
+                'X-CSRF-TOKEN':
+                    document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+            },
+            credentials: 'same-origin',
+        });
+
+        if (!response.ok) {
+            const data = await response.json().catch(() => null);
+            throw new Error(data?.message || 'Could not delete trainer.');
+        }
+
+        if (trainerDraft.value.id === trainer.id) {
+            startNewTrainer();
+        }
+        await loadTrainers();
+    } catch (deleteError) {
+        trainersError.value = deleteError instanceof Error
+            ? deleteError.message
+            : 'Could not delete trainer. Please try again.';
     }
 }
 

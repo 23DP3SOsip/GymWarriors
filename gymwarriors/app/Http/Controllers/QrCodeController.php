@@ -20,7 +20,7 @@ class QrCodeController extends Controller
     public function show(Request $request): JsonResponse
     {
         $purchase = PlanPurchase::where('user_id', $request->user()->id)
-            ->where('status', 'active')
+            ->whereIn('status', ['active', 'cancelled'])
             ->whereDate('end_date', '>=', now()->toDateString())
             ->latest('id')
             ->first();
@@ -42,7 +42,7 @@ class QrCodeController extends Controller
     {
         $result = DB::transaction(function () use ($request) {
             $purchase = PlanPurchase::where('user_id', $request->user()->id)
-                ->where('status', 'active')
+                ->whereIn('status', ['active', 'cancelled'])
                 ->whereDate('end_date', '>=', now()->toDateString())
                 ->latest('id')
                 ->lockForUpdate()

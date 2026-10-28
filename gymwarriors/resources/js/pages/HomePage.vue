@@ -60,6 +60,14 @@
 
 
                     <router-link
+                        v-if="isAdmin"
+                        to="/admin"
+                        class="login-btn"
+                    >
+                        ADMIN PANEL
+                    </router-link>
+
+                    <router-link
                         v-if="isLoggedIn"
                         to="/support"
                         class="login-btn"
@@ -69,7 +77,7 @@
 
                     <!-- LOGGED IN -->
                     <router-link
-                        v-if="isLoggedIn"
+                        v-if="isLoggedIn && !hasActiveMembership"
                         to="/plans"
                         class="start-btn"
                     >
@@ -156,12 +164,20 @@
 
                 <!-- LOGGED IN: MEMBERSHIP -->
                 <router-link
-                    v-if="isLoggedIn"
+                    v-if="isLoggedIn && !hasActiveMembership"
                     to="/plans"
                     class="mobile-navigation-primary"
                     @click="isMenuOpen = false"
                 >
                     MEMBERSHIP
+                </router-link>
+
+                <router-link
+                    v-if="isAdmin"
+                    to="/admin"
+                    @click="isMenuOpen = false"
+                >
+                    ADMIN PANEL
                 </router-link>
 
                 <router-link
@@ -226,10 +242,10 @@
                 <div class="hero-buttons">
 
                     <router-link
-                        to="/register"
+                        :to="isLoggedIn ? '/profile' : '/register'"
                         class="primary-btn"
                     >
-                        START TRAINING
+                        {{ isLoggedIn ? 'GO TO PROFILE' : 'START TRAINING' }}
                     </router-link>
 
 
@@ -343,7 +359,7 @@
             <div class="stat">
 
                 <strong>
-                    0
+                    {{ homepageData?.stats.warriors ?? '—' }}
                 </strong>
 
                 <span>
@@ -356,7 +372,7 @@
             <div class="stat">
 
                 <strong>
-                    0
+                    {{ homepageData?.stats.workouts ?? '—' }}
                 </strong>
 
                 <span>
@@ -369,7 +385,7 @@
             <div class="stat">
 
                 <strong>
-                    3
+                    {{ homepageData?.stats.locations ?? '—' }}
                 </strong>
 
                 <span>
@@ -516,111 +532,44 @@
             </div>
 
 
-            <div class="pricing-grid">
-
-                <!-- PARASTAIS -->
-
-                <article class="pricing-card">
+            <p v-if="homepageError" class="homepage-data-error">
+                {{ homepageError }}
+            </p>
+            <p v-else-if="!homepageData" class="homepage-data-message">
+                Loading membership plans…
+            </p>
+            <p v-else-if="!homepageData.plans.length" class="homepage-data-message">
+                No membership plans are available right now.
+            </p>
+            <div v-else class="pricing-grid">
+                <article
+                    v-for="(plan, index) in homepageData.plans"
+                    :key="plan.id"
+                    class="pricing-card"
+                >
 
                     <div class="pricing-card-top">
 
                         <span class="plan-name">
-                            PARASTAIS
+                            {{ plan.name }}
                         </span>
 
                         <span class="plan-id">
-                            #01
+                            #{{ String(index + 1).padStart(2, '0') }}
                         </span>
 
                     </div>
 
 
                     <div class="plan-price">
-                        €9.99
-                        <span>/ MONTH</span>
+                        €{{ Number(plan.price).toFixed(2) }}
+                        <span>/ 30 DAYS</span>
                     </div>
 
-
-                    <div class="plan-feature">
+                    <div v-for="feature in plan.features" :key="feature" class="plan-feature">
                         <span>✓</span>
-                        Gym access
+                        {{ feature }}
                     </div>
-
-
-                    <div class="plan-feature">
-                        <span>✓</span>
-                        Workout tracking
-                    </div>
-
-
-                    <div class="plan-feature">
-                        <span>✓</span>
-                        Progress tracking
-                    </div>
-
-
-                    <div class="plan-feature">
-                        <span>✓</span>
-                        Up to 2 locations
-                    </div>
-
-
-                    <router-link
-                        to="/plans"
-                        class="plan-button"
-                    >
-                        CHOOSE PLAN
-                    </router-link>
-
-                </article>
-
-
-                <!-- PRO -->
-
-                <article class="pricing-card">
-
-                    <div class="pricing-card-top">
-
-                        <span class="plan-name">
-                            PRO
-                        </span>
-
-                        <span class="plan-id">
-                            #02
-                        </span>
-
-                    </div>
-
-
-                    <div class="plan-price">
-                        €19.99
-                        <span>/ MONTH</span>
-                    </div>
-
-
-                    <div class="plan-feature">
-                        <span>✓</span>
-                        Gym access
-                    </div>
-
-
-                    <div class="plan-feature">
-                        <span>✓</span>
-                        Workout tracking
-                    </div>
-
-
-                    <div class="plan-feature">
-                        <span>✓</span>
-                        Progress tracking
-                    </div>
-
-
-                    <div class="plan-feature">
-                        <span>✓</span>
-                        Unlimited locations
-                    </div>
-
 
                     <router-link
                         to="/plans"
@@ -660,80 +609,104 @@
 
                 <!-- FAQ 01 -->
 
-                <div class="faq-item">
+                <div class="faq-item" :class="{ 'faq-item-open': openFaq === 0 }">
 
                     <button
                         class="faq-question"
                         type="button"
+                        :aria-expanded="openFaq === 0"
+                        aria-controls="faq-answer-0"
+                        @click="toggleFaq(0)"
                     >
                         <span>
                             What is Gym Warriors?
                         </span>
 
-                        <span class="faq-icon">
-                            +
+                        <span class="faq-icon" aria-hidden="true">
+                            {{ openFaq === 0 ? '−' : '+' }}
                         </span>
                     </button>
+                    <p v-if="openFaq === 0" id="faq-answer-0" class="faq-answer">
+                        Gym Warriors is a fitness platform where you can track workouts, follow your progress, connect with friends and train at our gym locations.
+                    </p>
 
                 </div>
 
 
                 <!-- FAQ 02 -->
 
-                <div class="faq-item">
+                <div class="faq-item" :class="{ 'faq-item-open': openFaq === 1 }">
 
                     <button
                         class="faq-question"
                         type="button"
+                        :aria-expanded="openFaq === 1"
+                        aria-controls="faq-answer-1"
+                        @click="toggleFaq(1)"
                     >
                         <span>
                             How does the ranking system work?
                         </span>
 
-                        <span class="faq-icon">
-                            +
+                        <span class="faq-icon" aria-hidden="true">
+                            {{ openFaq === 1 ? '−' : '+' }}
                         </span>
                     </button>
+                    <p v-if="openFaq === 1" id="faq-answer-1" class="faq-answer">
+                        Your rank is based on the number of completed workouts recorded in your account. Keep training consistently to climb the leaderboard.
+                    </p>
 
                 </div>
 
 
                 <!-- FAQ 03 -->
 
-                <div class="faq-item">
+                <div class="faq-item" :class="{ 'faq-item-open': openFaq === 2 }">
 
                     <button
                         class="faq-question"
                         type="button"
+                        :aria-expanded="openFaq === 2"
+                        aria-controls="faq-answer-2"
+                        @click="toggleFaq(2)"
                     >
                         <span>
                             Can I use multiple gym locations?
                         </span>
 
-                        <span class="faq-icon">
-                            +
+                        <span class="faq-icon" aria-hidden="true">
+                            {{ openFaq === 2 ? '−' : '+' }}
                         </span>
                     </button>
+                    <p v-if="openFaq === 2" id="faq-answer-2" class="faq-answer">
+                        Yes. The Pro membership includes access to all active locations. The standard plan includes access to the locations listed for that plan.
+                    </p>
 
                 </div>
 
 
                 <!-- FAQ 04 -->
 
-                <div class="faq-item">
+                <div class="faq-item" :class="{ 'faq-item-open': openFaq === 3 }">
 
                     <button
                         class="faq-question"
                         type="button"
+                        :aria-expanded="openFaq === 3"
+                        aria-controls="faq-answer-3"
+                        @click="toggleFaq(3)"
                     >
                         <span>
                             Is there a free plan?
                         </span>
 
-                        <span class="faq-icon">
-                            +
+                        <span class="faq-icon" aria-hidden="true">
+                            {{ openFaq === 3 ? '−' : '+' }}
                         </span>
                     </button>
+                    <p v-if="openFaq === 3" id="faq-answer-3" class="faq-answer">
+                        Gym access requires a paid membership. You can compare current plans and prices in the Membership section above.
+                    </p>
 
                 </div>
 
@@ -793,6 +766,13 @@
                 </router-link>
 
                 <router-link
+                    v-if="isAdmin"
+                    to="/admin"
+                >
+                    ADMIN PANEL
+                </router-link>
+
+                <router-link
                     v-if="isLoggedIn"
                     to="/support"
                 >
@@ -825,6 +805,10 @@ import {
 // =====================================================
 
 const isLoggedIn = ref(false);
+const isAdmin = ref(false);
+const hasActiveMembership = ref(false);
+const homepageData = ref(null);
+const homepageError = ref('');
 const leaderboard = ref(null);
 const leaderboardLoading = ref(false);
 const leaderboardError = ref('');
@@ -835,6 +819,11 @@ const leaderboardError = ref('');
 // =====================================================
 
 const isMenuOpen = ref(false);
+const openFaq = ref(null);
+
+const toggleFaq = (index) => {
+    openFaq.value = openFaq.value === index ? null : index;
+};
 
 
 // =====================================================
@@ -851,23 +840,50 @@ const checkAuthentication = async () => {
 
         if (response.status === 401 || response.status === 403) {
             isLoggedIn.value = false;
+            isAdmin.value = false;
+            hasActiveMembership.value = false;
             return;
         }
 
         if (!response.ok) {
             isLoggedIn.value = false;
+            isAdmin.value = false;
+            hasActiveMembership.value = false;
             console.error('Neizdevās pārbaudīt lietotāja autentifikāciju.');
             return;
         }
 
+        const user = await response.json();
         isLoggedIn.value = true;
+        isAdmin.value = user.role === 'admin';
+        hasActiveMembership.value = user.has_active_membership;
         await loadLeaderboard();
     } catch (error) {
         isLoggedIn.value = false;
+        isAdmin.value = false;
+        hasActiveMembership.value = false;
         console.error(
             'Neizdevās izveidot savienojumu ar autentifikācijas API.',
             error
         );
+    }
+};
+
+const loadHomepageData = async () => {
+    homepageError.value = '';
+    try {
+        const response = await fetch('/api/homepage', {
+            headers: { Accept: 'application/json' },
+        });
+
+        if (!response.ok) {
+            throw new Error('Could not load homepage data.');
+        }
+
+        homepageData.value = await response.json();
+    } catch (error) {
+        homepageError.value = 'Could not load membership plans and gym statistics. Please refresh the page.';
+        console.error('HOMEPAGE DATA ERROR:', error);
     }
 };
 
@@ -903,9 +919,8 @@ const loadLeaderboard = async () => {
 // =====================================================
 
 onMounted(() => {
-
     checkAuthentication();
-
+    loadHomepageData();
 });
 
 </script>

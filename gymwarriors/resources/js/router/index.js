@@ -8,7 +8,6 @@ import PlansPage from '../pages/PlansPage.vue';
 import CaloriesPage from '../pages/CaloriesPage.vue';
 import WorkoutPage from '../pages/WorkoutPage.vue';
 import AdminPage from '../pages/AdminPage.vue';
-import ReportsPage from '../pages/ReportsPage.vue';
 import SupportChatPage from '../pages/SupportChatPage.vue';
 
 const router = createRouter({
@@ -65,8 +64,7 @@ const router = createRouter({
         },
         {
             path: '/reports',
-            name: 'reports',
-            component: ReportsPage,
+            redirect: '/admin',
         },
         {
             path: '/support',

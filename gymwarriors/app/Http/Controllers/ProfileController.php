@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PlanPurchase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -29,6 +30,22 @@ class ProfileController extends Controller
                 'email' => $user->email,
                 'phone' => $user->phone,
             ],
+        ]);
+    }
+
+    public function cancelMembership(Request $request): JsonResponse
+    {
+        $purchase = PlanPurchase::query()
+            ->where('user_id', $request->user()->id)
+            ->where('status', 'active')
+            ->whereDate('end_date', '>=', now()->toDateString())
+            ->latest('id')
+            ->firstOrFail();
+
+        $purchase->update(['status' => 'cancelled']);
+
+        return response()->json([
+            'message' => 'Membership cancelled. Your access remains active until the end date.',
         ]);
     }
 }

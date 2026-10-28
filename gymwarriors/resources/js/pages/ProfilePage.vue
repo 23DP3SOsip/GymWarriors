@@ -12,7 +12,6 @@
                 <a href="#friends">FRIENDS</a>
                 <router-link to="/calories">CALORIE TRACKING</router-link>
                 <router-link to="/workout">WORKOUTS AND NUTRITION</router-link>
-                <router-link to="/reports">REPORTS</router-link>
                 <router-link to="/support">SUPPORT</router-link>
             </nav>
                 
@@ -62,9 +61,6 @@
     </router-link>
     <router-link to="/workout" @click="isMenuOpen = false">
         WORKOUTS AND NUTRITION
-    </router-link>
-    <router-link to="/reports" @click="isMenuOpen = false">
-        REPORTS
     </router-link>
     <router-link to="/support" @click="isMenuOpen = false">
         SUPPORT CHAT
@@ -253,6 +249,10 @@
                     MEMBERSHIP
                 </div>
 
+                <p v-if="membershipCancelError" class="membership-action-error">
+                    {{ membershipCancelError }}
+                </p>
+
                 <div v-if="loadingMembership" class="membership-card">
                     <div>
                         <p class="membership-label">MEMBERSHIP</p>
@@ -290,6 +290,9 @@
 
                         <p class="membership-status">
                             {{ membership.status.toUpperCase() }}
+                        </p>
+                        <p v-if="membership.status === 'cancelled'">
+                            ACCESS UNTIL {{ formatDate(membership.end_date) }} — THIS MEMBERSHIP WILL NOT RENEW.
                         </p>
                     </div>
                     <div
@@ -335,12 +338,23 @@
     </span>
 </div>
 
-                    <router-link
-                        to="/plans"
-                        class="membership-button"
-                    >
-                        CHANGE PLAN
-                    </router-link>
+                    <div class="membership-actions">
+                        <router-link
+                            to="/plans"
+                            class="membership-button"
+                        >
+                            CHANGE PLAN
+                        </router-link>
+                        <button
+                            v-if="membership.status === 'active'"
+                            type="button"
+                            class="profile-cancel-button"
+                            :disabled="cancellingMembership"
+                            @click="cancelMembership"
+                        >
+                            {{ cancellingMembership ? 'CANCELLING...' : 'CANCEL MEMBERSHIP' }}
+                        </button>
+                    </div>
                 </div>
 
                 <div v-else class="membership-card">
@@ -525,6 +539,8 @@ const profileSaveMessage = ref('');
 
 const membership = ref(null);
 const loadingMembership = ref(true);
+const cancellingMembership = ref(false);
+const membershipCancelError = ref('');
 const progress = ref(null);
 const progressDays = ref(90);
 const progressError = ref('');
@@ -640,6 +656,43 @@ const cancelEditingProfile = () => {
     isEditingProfile.value = false;
     profileSaveError.value = '';
     Object.keys(profileErrors).forEach((key) => delete profileErrors[key]);
+};
+
+const cancelMembership = async () => {
+    if (!window.confirm('Are you sure you want to cancel your membership?')) {
+        return;
+    }
+
+    cancellingMembership.value = true;
+    membershipCancelError.value = '';
+
+    try {
+        const response = await fetch('/api/profile/membership/cancel', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'X-XSRF-TOKEN': csrfToken(),
+            },
+        });
+
+        if (response.status === 401) {
+            router.push('/login');
+            return;
+        }
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Could not cancel your membership.');
+        }
+
+        membership.value.status = 'cancelled';
+    } catch (error) {
+        membershipCancelError.value = error.message || 'Could not cancel your membership.';
+        console.error('MEMBERSHIP CANCELLATION ERROR:', error);
+    } finally {
+        cancellingMembership.value = false;
+    }
 };
 
 const saveProfile = async () => {
