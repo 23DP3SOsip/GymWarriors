@@ -23,7 +23,10 @@
                     FEATURES
                 </a>
 
-                <a href="#pricing">
+                <a
+                    v-if="authChecked && (!isLoggedIn || !hasActiveMembership)"
+                    href="#pricing"
+                >
                     PRICING
                 </a>
 
@@ -136,6 +139,7 @@
 
                 <!-- PRICING -->
                 <a
+                    v-if="authChecked && (!isLoggedIn || !hasActiveMembership)"
                     href="#pricing"
                     @click="isMenuOpen = false"
                 >
@@ -320,36 +324,6 @@
 
         </section>
 
-        <section v-if="isLoggedIn" class="leaderboard-section" aria-labelledby="leaderboard-title">
-            <div class="leaderboard-heading">
-                <p class="hero-small">GYM WARRIORS RANKING</p>
-                <h2 id="leaderboard-title">CLIMB THE <span>RANKS</span></h2>
-            </div>
-
-            <p v-if="leaderboardLoading" class="leaderboard-message">Loading rankings...</p>
-            <p v-else-if="leaderboardError" class="leaderboard-message leaderboard-error">{{ leaderboardError }}</p>
-            <div v-else-if="leaderboard" class="leaderboard-content">
-                <article class="leaderboard-user-rank">
-                    <span class="leaderboard-label">YOUR RANK</span>
-                    <strong>#{{ leaderboard.rank }}</strong>
-                    <span>OF {{ leaderboard.total_users }} WARRIORS</span>
-                    <p>{{ leaderboard.workouts_count }} {{ leaderboard.workouts_count === 1 ? 'WORKOUT' : 'WORKOUTS' }} COMPLETED</p>
-                </article>
-
-                <div class="leaderboard-top">
-                    <h3>TOP 3 WARRIORS</h3>
-                    <ol>
-                        <li v-for="warrior in leaderboard.top_users" :key="warrior.rank">
-                            <span class="leaderboard-place">#{{ warrior.rank }}</span>
-                            <span class="leaderboard-name">{{ warrior.first_name }} {{ warrior.last_name }}</span>
-                            <strong>{{ warrior.workouts_count }} {{ warrior.workouts_count === 1 ? 'WORKOUT' : 'WORKOUTS' }}</strong>
-                        </li>
-                    </ol>
-                </div>
-            </div>
-        </section>
-
-
         <!-- =====================================================
              STATS
         ====================================================== -->
@@ -513,6 +487,7 @@
         ====================================================== -->
 
         <section
+            v-if="authChecked && (!isLoggedIn || !hasActiveMembership)"
             class="pricing-section"
             id="pricing"
         >
@@ -807,11 +782,9 @@ import {
 const isLoggedIn = ref(false);
 const isAdmin = ref(false);
 const hasActiveMembership = ref(false);
+const authChecked = ref(false);
 const homepageData = ref(null);
 const homepageError = ref('');
-const leaderboard = ref(null);
-const leaderboardLoading = ref(false);
-const leaderboardError = ref('');
 
 
 // =====================================================
@@ -856,8 +829,8 @@ const checkAuthentication = async () => {
         const user = await response.json();
         isLoggedIn.value = true;
         isAdmin.value = user.role === 'admin';
-        hasActiveMembership.value = user.has_active_membership;
-        await loadLeaderboard();
+        hasActiveMembership.value = Boolean(user.has_active_membership);
+        authChecked.value = true;
     } catch (error) {
         isLoggedIn.value = false;
         isAdmin.value = false;
@@ -866,6 +839,8 @@ const checkAuthentication = async () => {
             'Neizdevās izveidot savienojumu ar autentifikācijas API.',
             error
         );
+    } finally {
+        authChecked.value = true;
     }
 };
 
@@ -886,33 +861,6 @@ const loadHomepageData = async () => {
         console.error('HOMEPAGE DATA ERROR:', error);
     }
 };
-
-const loadLeaderboard = async () => {
-    leaderboardLoading.value = true;
-    leaderboardError.value = '';
-    try {
-        const response = await fetch('/api/leaderboard', {
-            headers: { Accept: 'application/json' },
-        });
-
-        if (response.status === 401) {
-            isLoggedIn.value = false;
-            return;
-        }
-
-        if (!response.ok) {
-            throw new Error('Could not load the leaderboard.');
-        }
-
-        leaderboard.value = await response.json();
-    } catch (error) {
-        leaderboardError.value = error.message || 'Could not load the leaderboard.';
-        console.error('LEADERBOARD ERROR:', error);
-    } finally {
-        leaderboardLoading.value = false;
-    }
-};
-
 
 // =====================================================
 // PAGE LOAD

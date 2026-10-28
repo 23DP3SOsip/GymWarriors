@@ -8,6 +8,7 @@
             <nav class="profile-nav">
                 <router-link to="/profile">PROFILE</router-link>
                 <a href="#stats">STATS</a>
+                <a href="#ranking">RANKING</a>
                 <a href="#membership">MEMBERSHIP</a>
                 <a href="#friends">FRIENDS</a>
                 <router-link to="/calories">CALORIE TRACKING</router-link>
@@ -46,6 +47,10 @@
 
     <a href="#stats" @click="isMenuOpen = false">
         STATS
+    </a>
+
+    <a href="#ranking" @click="isMenuOpen = false">
+        RANKING
     </a>
 
     <a href="#membership" @click="isMenuOpen = false">
@@ -491,6 +496,35 @@
                 </div>
             </section>
 
+            <section class="profile-section leaderboard-section" id="ranking" aria-labelledby="leaderboard-title">
+                <div class="leaderboard-heading">
+                    <p class="hero-small">GYM WARRIORS RANKING</p>
+                    <h2 id="leaderboard-title">CLIMB THE <span>RANKS</span></h2>
+                </div>
+
+                <p v-if="leaderboardLoading" class="leaderboard-message">Loading rankings...</p>
+                <p v-else-if="leaderboardError" class="leaderboard-message leaderboard-error">{{ leaderboardError }}</p>
+                <div v-else-if="leaderboard" class="leaderboard-content">
+                    <article class="leaderboard-user-rank">
+                        <span class="leaderboard-label">YOUR RANK</span>
+                        <strong>#{{ leaderboard.rank }}</strong>
+                        <span>OF {{ leaderboard.total_users }} WARRIORS</span>
+                        <p>{{ leaderboard.workouts_count }} {{ leaderboard.workouts_count === 1 ? 'WORKOUT' : 'WORKOUTS' }} COMPLETED</p>
+                    </article>
+
+                    <div class="leaderboard-top">
+                        <h3>TOP 3 WARRIORS</h3>
+                        <ol>
+                            <li v-for="warrior in leaderboard.top_users" :key="warrior.rank">
+                                <span class="leaderboard-place">#{{ warrior.rank }}</span>
+                                <span class="leaderboard-name">{{ warrior.first_name }} {{ warrior.last_name }}</span>
+                                <strong>{{ warrior.workouts_count }} {{ warrior.workouts_count === 1 ? 'WORKOUT' : 'WORKOUTS' }}</strong>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+
             <section class="profile-section">
                 <div class="section-title">
                     <span>07</span>
@@ -549,6 +583,9 @@ const incomingRequests = ref([]);
 const friendQuery = ref('');
 const searchResults = ref([]);
 const friendsError = ref('');
+const leaderboard = ref(null);
+const leaderboardLoading = ref(true);
+const leaderboardError = ref('');
 
 const initials = computed(() => {
     const first = user.first_name?.charAt(0) || '';
@@ -636,6 +673,33 @@ const loadProfile = async () => {
         console.error('PROFILE ERROR:', error);
     } finally {
         loadingMembership.value = false;
+    }
+};
+
+const loadLeaderboard = async () => {
+    leaderboardLoading.value = true;
+    leaderboardError.value = '';
+
+    try {
+        const response = await fetch('/api/leaderboard', {
+            headers: { Accept: 'application/json' },
+        });
+
+        if (response.status === 401) {
+            router.push('/login');
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error('Could not load the leaderboard.');
+        }
+
+        leaderboard.value = await response.json();
+    } catch (error) {
+        leaderboardError.value = error.message || 'Could not load the leaderboard.';
+        console.error('LEADERBOARD ERROR:', error);
+    } finally {
+        leaderboardLoading.value = false;
     }
 };
 
@@ -962,6 +1026,7 @@ onMounted(() => {
     loadQr();
     loadFriends();
     loadProgress();
+    loadLeaderboard();
 
     timer = setInterval(() => {
         now.value = Date.now();
